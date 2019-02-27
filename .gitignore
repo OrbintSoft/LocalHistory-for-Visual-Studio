@@ -40,3 +40,4 @@ BUILD.bat
 packages/
 .idea/
 LocalHistory*.tss
+TestProject/
