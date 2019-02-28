@@ -1,5 +1,9 @@
-﻿06/28/2018 v2.1.1 (beta)
-* Fixed history not being saved when the file is not in a subdir relative to the sln file's dir. More info on this issue: https://github.com/LostAlloy/LocalHistory-for-Visual-Studio/issues/3
+﻿02/28/2019 v2.1.2 (beta)
+* Added proper support for long file paths. This is a workaround until we have fixed #4. More info on this issue: #10
+* Fixed a few cases where the tool window wasn't being updated. In particular, this might help when you have projects that are lazy-loaded.
+
+06/28/2018 v2.1.1 (beta)
+* Fixed history not being saved when the file is not in a subdir relative to the sln file's dir. More info on this issue: #3
 
 02/14/2018 v2.0.2
 * Fixed internal diff not opening.
