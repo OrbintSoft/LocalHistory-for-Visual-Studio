@@ -21,12 +21,15 @@ namespace LOSTALLOY.LocalHistory {
     using System.Windows.Controls;
     using System.Windows.Data;
     using System.Windows.Input;
+    using Alphaleonis.Win32.Filesystem;
     using JetBrains.Annotations;
     using Microsoft.VisualBasic.FileIO;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
     using WPFCustomMessageBox;
+    using File = Alphaleonis.Win32.Filesystem.File;
     using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
+    using Path = Alphaleonis.Win32.Filesystem.Path;
 
 
     /// <summary>
@@ -186,10 +189,10 @@ namespace LOSTALLOY.LocalHistory {
             var diffToolArgs = LocalHistoryPackage.Instance.OptionsPage.DiffToolArgs;
 
             var usedBuiltInDiffTool =
-                    LocalHistoryPackage.Instance.OptionsPage.UseInternalDiff ||
-                    !File.Exists(diffToolPath) ||
-                    !diffToolArgs.Contains("{then}") ||
-                    !diffToolArgs.Contains("{now}");
+                LocalHistoryPackage.Instance.OptionsPage.UseInternalDiff
+                || !File.Exists(diffToolPath)
+                || !diffToolArgs.Contains("{then}")
+                || !diffToolArgs.Contains("{now}");
 
 
             if (!usedBuiltInDiffTool) {
@@ -198,11 +201,26 @@ namespace LOSTALLOY.LocalHistory {
                     var diff = new Process();
                     diff.StartInfo.FileName = diffToolPath;
 
+                    if (LocalHistoryPackage.Instance.OptionsPage.EnforceShortPathsWithExternalDiffTool) {
+                        var tempVersioned = GetTemporaryShortPathFileForNode(node);
+                        LocalHistoryPackage.LogTrace(
+                            $"Using short paths with diff tool.\nPassing file paths:\nnow {node.OriginalPath}\nversion:{tempVersioned}");
+
+                        diff.StartInfo.Arguments = diffToolArgs
+                                                   .Replace("{then}", $"\"{tempVersioned}\"")
+                                                   .Replace("{now}", $"\"{node.OriginalPath}\"");
+                    } else {
+                        LocalHistoryPackage.LogTrace(
+                            $"Using long paths with diff tool.\nPassing file paths:\nnow {node.OriginalPath}\nversion:{node.VersionFileFullFilePath}");
+
+                        diff.StartInfo.Arguments = diffToolArgs
+                                                   .Replace("{then}", $"\"{node.VersionFileFullFilePath}\"")
+                                                   .Replace("{now}", $"\"{node.OriginalPath}\"");
+                    }
+
                     //run merge | then | now | because we often want to copy something from THEN
                     //and we never want to copy anything from NOW to THEN (makes no sense)
-                    diff.StartInfo.Arguments = diffToolArgs
-                            .Replace("{then}", $"\"{node.VersionFileFullFilePath}\"")
-                            .Replace("{now}", $"\"{node.OriginalPath}\"");
+
 
                     diff.StartInfo.WindowStyle = ProcessWindowStyle.Maximized;
                     diff.Start();
@@ -256,9 +274,11 @@ namespace LOSTALLOY.LocalHistory {
                 }
 
                 LocalHistoryPackage.Log("Opening internal diff frame.", false, true);
+
                 // Open a comparison between the old file and the current file
+                var tempVersioned = GetTemporaryShortPathFileForNode(node);
                 differenceFrame = differenceService.OpenComparisonWindow2(
-                    node.VersionFileFullFilePath,
+                    tempVersioned,
                     node.OriginalPath,
                     $"{node.TimestampAndLabel} vs Now",
                     $"{node.TimestampAndLabel} vs Now",
@@ -266,9 +286,38 @@ namespace LOSTALLOY.LocalHistory {
                     $"{node.OriginalFileName} Now",
                     $"{node.TimestampAndLabel} vs Now",
                     null,
-                    (uint) __VSDIFFSERVICEOPTIONS.VSDIFFOPT_LeftFileIsTemporary
+                    (uint)__VSDIFFSERVICEOPTIONS.VSDIFFOPT_LeftFileIsTemporary
                 );
             }
+        }
+
+
+        [NotNull]
+        private static string GetTemporaryShortPathFileForNode([NotNull] DocumentNode node) {
+            // Open a comparison between the old file and the current file
+            var tempDir = LocalHistoryPackage.TempDir;
+
+            var fileSystemSafeTimestamp = node.RawTime.ToString("yyyy-MM-dd_HH.mm.ss");
+
+            //always prefix with LocalHistory_ so we can safely clean them up later
+            var shortVersionFileName = $"LocalHistory_{fileSystemSafeTimestamp}_{node.OriginalFileName}";
+            var shortFullFilePath = Path.Combine(tempDir, shortVersionFileName);
+
+            //since the version file can have long paths, and VS don't support them, we make a temporary copy for comparison
+            if (shortFullFilePath.Length > 200) {
+                LocalHistoryPackage.LogTrace($"File {shortFullFilePath} still has too long a path ({shortFullFilePath.Length} chars). Will truncate");
+                var versionedFileExtension = Path.GetExtension(shortFullFilePath) ?? string.Empty;
+
+                shortFullFilePath = Path.Combine(shortFullFilePath.Substring(0, 220), versionedFileExtension);
+                LocalHistoryPackage.LogTrace($"New short path is {shortFullFilePath}");
+            }
+
+            File.Copy(
+                node.VersionFileFullFilePath,
+                shortFullFilePath,
+                CopyOptions.AllowDecryptedDestination);
+
+            return shortFullFilePath;
         }
 
         #endregion
@@ -439,6 +488,9 @@ namespace LOSTALLOY.LocalHistory {
 
                 try {
                     node.AddLabel(label);
+                    if (node.Label != label) {
+                        LocalHistoryPackage.Log($"Label was too long. It was truncated to {node.Label}");
+                    }
                 }
                 catch {
                     return false;

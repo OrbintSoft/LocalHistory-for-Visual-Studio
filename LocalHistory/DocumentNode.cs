@@ -12,8 +12,7 @@
 
 namespace LOSTALLOY.LocalHistory {
     using System;
-    using System.IO;
-
+    using Alphaleonis.Win32.Filesystem;
     using JetBrains.Annotations;
 
 
@@ -101,6 +100,8 @@ namespace LOSTALLOY.LocalHistory {
         [UsedImplicitly]
         public string Timestamp => $"{_time:dd/MM/yyyy HH:mm:ss}";
 
+        public DateTime RawTime => _time;
+
         [NotNull]
         public string TimestampAndLabel => $"{_time:dd/MM/yyyy HH:mm:ss}{(HasLabel ? $" {_label}" : "")}";
 
@@ -175,9 +176,37 @@ namespace LOSTALLOY.LocalHistory {
 
         public void AddLabel(string label) {
             var currentFullPath = Path.Combine(RepositoryPath, VersionFileName);
-            _label = label;
+            SetLabel(label);
             var newFullPath = Path.Combine(RepositoryPath, VersionFileName);
-            File.Move(currentFullPath, newFullPath);
+
+            try {
+                File.Move(currentFullPath, newFullPath);
+            }
+            catch (Exception e) {
+                LocalHistoryPackage.Log($"Caught exception when moving the file to remove the label.Exception is below\n{e}");
+            }
+        }
+
+
+        private void SetLabel(string label) {
+            _label = label;
+            var newFileName = VersionFileName;
+            if (newFileName.Length <= 150) {
+                return;
+            }
+
+            LocalHistoryPackage.Log($"Label {label} is too long for file named {VersionFileName}. It will be truncated.");
+
+            //truncate to keep it sane
+            newFileName = newFileName.Substring(0, 150);
+
+            //timestamp$filename.extension$label
+            var splitNewFileName = newFileName.Split('$');
+            if (splitNewFileName.Length < 3) {
+                return;
+            }
+
+            _label = splitNewFileName[2];
         }
 
 
@@ -189,7 +218,14 @@ namespace LOSTALLOY.LocalHistory {
             var currentFullPath = Path.Combine(RepositoryPath, VersionFileName);
             var fileNameWithoutLabel = VersionFileName.Substring(0, VersionFileName.Length - $"${_label}".Length);
             var newFullPath = Path.Combine(RepositoryPath, fileNameWithoutLabel);
-            File.Move(currentFullPath, newFullPath);
+
+            try {
+                File.Move(currentFullPath, newFullPath);
+            }
+            catch (Exception e) { 
+                LocalHistoryPackage.Log($"Caught exception when moving the file to remove the label.Exception is below\n{e}");
+            }
+
             _label = null;
         }
 

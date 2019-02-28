@@ -15,8 +15,7 @@ namespace LOSTALLOY.LocalHistory {
     using System.Collections.Generic;
     using System.ComponentModel.Design;
     using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
+    using Alphaleonis.Win32.Filesystem;
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
@@ -52,8 +51,7 @@ namespace LOSTALLOY.LocalHistory {
     // This attribute registers a tool window exposed by this package.
     [ProvideToolWindow(typeof(LocalHistoryToolWindow))]
     [Guid(GuidList.guidLocalHistoryPkgString)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
-//    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string)] //if this is used, the OnAfterOpenSolution won't fire
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_string)]
     [ProvideOptionPage(
         typeof(OptionsPage),
         "Sugoi LocalHistory",
@@ -69,12 +67,14 @@ namespace LOSTALLOY.LocalHistory {
             "sugoi",
             "lostalloy"
         })]
-    public sealed class LocalHistoryPackage: Package, IVsSolutionEvents, IVsSelectionEvents {
+    public sealed class LocalHistoryPackage: Package, IVsSolutionEvents, IVsSolutionLoadEvents, IVsSelectionEvents {
 
         #region Static Fields
 
         [NotNull]
         public static LocalHistoryPackage Instance;
+
+        public static readonly string TempDir = Path.Combine(Path.GetTempPath(), "LocalHistory");
 
         [CanBeNull]
         private static DTE dte;
@@ -91,9 +91,8 @@ namespace LOSTALLOY.LocalHistory {
 
         [CanBeNull]
         public LocalHistoryToolWindow ToolWindow;
-        private uint solutionCookie;
-        private uint rdtCookie;
-        private uint selectionCookie;
+        private uint runningDocTableEventsDwCookie;
+        private uint selectionEventsDwCookie;
         [CanBeNull]
         private DocumentRepository documentRepository;
         private LocalHistoryDocumentListener documentListener;
@@ -158,37 +157,6 @@ namespace LOSTALLOY.LocalHistory {
         }
 
 
-        /// <summary>
-        ///     When a solution is opened, this function creates a new <code>DocumentRepository</code> and
-        ///     registers the <code>LocalHistoryDocumentListener</code> to listen for save events.
-        /// </summary>
-        public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) {
-            Log("Entering OnAfterOpenSolution()");
-
-            // The solution name can be empty if the user opens a file without opening a solution
-            var maybeSolution = dte?.Solution;
-            if (maybeSolution != null && File.Exists(maybeSolution.FullName)) {
-                RegisterDocumentListener();
-                RegisterSelectionListener();
-            } else {
-                Log($"Did not register document listener. dte.Solution==null? {(maybeSolution == null ? "YES" : $"NO (dte.Solution.FullName: {maybeSolution?.FullName})")}, dte.Solution.FullName:\"{maybeSolution?.FullName ?? "EMPTY"}\"");
-            }
-
-            return VSConstants.S_OK;
-        }
-
-
-        /// <summary>
-        ///     When a solution is closed, this function creates unsubscribed to documents and selection events.
-        /// </summary>
-        public int OnAfterCloseSolution(object pUnkReserved) {
-            UnregisterDocumentListener();
-            UnregisterSelectionListener();
-            UpdateToolWindow();
-
-            return VSConstants.S_OK;
-        }
-
         public void RegisterDocumentListener() {
             var documentTable = (IVsRunningDocumentTable) GetGlobalService(typeof(SVsRunningDocumentTable));
 
@@ -203,100 +171,50 @@ namespace LOSTALLOY.LocalHistory {
                 $"Creating {nameof(DocumentRepository)} "
                 + $"with {nameof(solutionDirectory)}: \"{solutionDirectory}\" "
                 + $"and {nameof(repositoryDirectory)}: \"{repositoryDirectory}\"");
+
             documentRepository = new DocumentRepository(solutionDirectory, repositoryDirectory);
 
             // Create and register a document listener that will handle save events
             documentListener = new LocalHistoryDocumentListener(documentTable, documentRepository);
 
-            var adviseResult = documentTable.AdviseRunningDocTableEvents(documentListener, out rdtCookie);
+            var adviseResult = documentTable.AdviseRunningDocTableEvents(documentListener, out runningDocTableEventsDwCookie);
             if (adviseResult != VSConstants.S_OK) {
                 Log($"Failed to AdviseRunningDocTableEvents. Error code is: {adviseResult}");
             }
         }
 
 
-        public void UnregisterDocumentListener() {
-            var documentTable = (IVsRunningDocumentTable) GetGlobalService(typeof(SVsRunningDocumentTable));
+        private void UnregisterDocumentListener() {
+            if (runningDocTableEventsDwCookie != 0) {
+                var documentTable = (IVsRunningDocumentTable)GetGlobalService(typeof(SVsRunningDocumentTable));
 
-            var unadivise = documentTable.UnadviseRunningDocTableEvents(rdtCookie);
-            if (unadivise != VSConstants.S_OK) {
-                Log($"Failed to UnadviseRunningDocTableEvents. Error code is: {unadivise}");
+                var unadivise = documentTable.UnadviseRunningDocTableEvents(runningDocTableEventsDwCookie);
+                if (unadivise != VSConstants.S_OK) {
+                    Log($"Failed to UnadviseRunningDocTableEvents. Error code is: {unadivise}");
+                }
             }
         }
 
 
-        public void RegisterSelectionListener() {
+        private void RegisterSelectionListener() {
             var selectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof(SVsShellMonitorSelection));
 
-            var adviseResult =  selectionMonitor.AdviseSelectionEvents(this, out selectionCookie);
+            var adviseResult = selectionMonitor.AdviseSelectionEvents(this, out selectionEventsDwCookie);
             if (adviseResult != VSConstants.S_OK) {
                 Log($"Failed to AdviseSelectionEvents. Error code is: {adviseResult}");
             }
         }
 
 
-        public void UnregisterSelectionListener() {
-            var selectionMonitor = (IVsMonitorSelection) GetGlobalService(typeof(SVsShellMonitorSelection));
+        private void UnregisterSelectionListener() {
+            if (selectionEventsDwCookie != 0) {
+                var selectionMonitor = (IVsMonitorSelection)GetGlobalService(typeof(SVsShellMonitorSelection));
 
-            var unadivise = selectionMonitor.UnadviseSelectionEvents(selectionCookie);
-            if (unadivise != VSConstants.S_OK) {
-                Log($"Failed to UnadviseSelectionEvents. Error code is: {unadivise}");
-            }
-        }
-
-
-        public int OnSelectionChanged(
-            IVsHierarchy pHierOld,
-            uint itemidOld,
-            IVsMultiItemSelect pMISOld,
-            ISelectionContainer pSCOld,
-            IVsHierarchy pHierNew,
-            uint itemidNew,
-            IVsMultiItemSelect pMISNew,
-            ISelectionContainer pSCNew) {
-            // The selected item can be a Solution, Project, meta ProjectItem or file ProjectItem
-
-            // Don't update the tool window if the selection has not changed
-            if (itemidOld == itemidNew) {
-                return VSConstants.S_OK;
-            }
-
-            // Don't update the tool window if it doesn't exist
-            if (ToolWindow == null) {
-                ShowToolWindow(false);
-            }
-
-            if (ToolWindow == null) {
-                return VSConstants.S_OK;
-            }
-
-            // Don't update the tool window if it isn't visible
-            var windowFrame = (IVsWindowFrame) ToolWindow.Frame;
-            if (windowFrame.IsVisible() == VSConstants.S_FALSE) {
-                Log("Tool window is not visible. Will not update.");
-                return VSConstants.S_OK;
-            }
-
-            Log($"Selection change! Previous selection: {itemidOld} -> New selection: {itemidNew}");
-
-            var si = dte?.SelectedItems.Item(1);
-            var item = si?.ProjectItem;
-
-            // Solutions and Projects don't have ProjectItems
-            if (item != null && item.FileCount != 0) {
-                var filePath = item.FileNames[0];
-
-                // Only update for project items that exist (Not all of them do).
-                if (File.Exists(filePath)) {
-                    UpdateToolWindow(filePath);
-
-                    return VSConstants.S_OK;
+                var unadivise = selectionMonitor.UnadviseSelectionEvents(selectionEventsDwCookie);
+                if (unadivise != VSConstants.S_OK) {
+                    Log($"Failed to UnadviseSelectionEvents. Error code is: {unadivise}");
                 }
             }
-
-            UpdateToolWindow();
-
-            return VSConstants.S_OK;
         }
 
 
@@ -361,88 +279,6 @@ namespace LOSTALLOY.LocalHistory {
         }
 
 
-        public int OnAfterLoadProject(
-            IVsHierarchy pStubHierarchy,
-            IVsHierarchy pRealHierarchy) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnAfterOpenProject(
-            IVsHierarchy pHierarchy,
-            int fAdded) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnBeforeCloseProject(
-            IVsHierarchy pHierarchy,
-            int fRemoved) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnBeforeCloseSolution(
-            object pUnkReserved) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnBeforeUnloadProject(
-            IVsHierarchy pRealHierarchy,
-            IVsHierarchy pStubHierarchy) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnQueryCloseProject(
-            IVsHierarchy pHierarchy,
-            int fRemoving,
-
-            // ReSharper disable once RedundantAssignment
-            ref int pfCancel) {
-            pfCancel = VSConstants.S_OK;
-
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnQueryCloseSolution(
-            object pUnkReserved,
-
-            // ReSharper disable once RedundantAssignment
-            ref int pfCancel) {
-            pfCancel = VSConstants.S_OK;
-
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnQueryUnloadProject(
-            IVsHierarchy pRealHierarchy,
-
-            // ReSharper disable once RedundantAssignment
-            ref int pfCancel) {
-            pfCancel = VSConstants.S_OK;
-
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) {
-            return VSConstants.S_OK;
-        }
-
-
-        public int OnElementValueChanged(uint elementid, object varValueOld, object varValueNew) {
-            return VSConstants.S_OK;
-        }
-
-        #endregion
-
-
-        #region Event Handlers
-
         /// <summary>
         ///     This function is the callback used to execute a command when the a menu item is clicked.
         ///     See the Initialize method to see how the menu item is associated to this function using
@@ -471,6 +307,78 @@ namespace LOSTALLOY.LocalHistory {
             ShowToolWindow(true);
         }
 
+
+        int IVsSelectionEvents.OnSelectionChanged(
+            IVsHierarchy pHierOld,
+            uint itemidOld,
+            IVsMultiItemSelect pMISOld,
+            ISelectionContainer pSCOld,
+            IVsHierarchy pHierNew,
+            uint itemidNew,
+            IVsMultiItemSelect pMISNew,
+            ISelectionContainer pSCNew) {
+            // The selected item can be a Solution, Project, meta ProjectItem or file ProjectItem
+
+            // Don't update the tool window if the selection has not changed
+            if (itemidOld == itemidNew) {
+                return VSConstants.S_OK;
+            }
+
+            // Don't update the tool window if it doesn't exist
+            if (ToolWindow == null) {
+                ShowToolWindow(false);
+            }
+
+            if (ToolWindow == null) {
+                return VSConstants.S_OK;
+            }
+
+            // Don't update the tool window if it isn't visible
+            var windowFrame = (IVsWindowFrame) ToolWindow.Frame;
+            if (windowFrame.IsVisible() == VSConstants.S_FALSE) {
+                Log("Tool window is not visible. Will not update.");
+                return VSConstants.S_OK;
+            }
+
+            Log($"Selection change! Previous selection: {itemidOld} -> New selection: {itemidNew}");
+
+            if (!TryUpdateToolWindowForCurrentSelectionIfAny()) {
+                UpdateToolWindow();
+            }
+
+            return VSConstants.S_OK;
+        }
+
+
+        private bool TryUpdateToolWindowForCurrentSelectionIfAny() {
+            var si = dte?.SelectedItems.Item(1);
+            var item = si?.ProjectItem;
+
+            // Solutions and Projects don't have ProjectItems
+            if (item != null && item.FileCount != 0) {
+                var filePath = item.FileNames[0];
+
+                // Only update for project items that exist (Not all of them do).
+                if (File.Exists(filePath)) {
+                    UpdateToolWindow(filePath);
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+        int IVsSelectionEvents.OnCmdUIContextChanged(uint dwCmdUICookie, int fActive) {
+            return VSConstants.S_OK;
+        }
+
+
+        int IVsSelectionEvents.OnElementValueChanged(uint elementid, object varValueOld, object varValueNew) {
+            return VSConstants.S_OK;
+        }
+
         #endregion
 
 
@@ -483,9 +391,21 @@ namespace LOSTALLOY.LocalHistory {
         /// </summary>
         protected override void Initialize() {
             base.Initialize();
+
             //Log needs the OptionsPage
-            OptionsPage = (OptionsPage) GetDialogPage(typeof(OptionsPage));
+            OptionsPage = (OptionsPage)GetDialogPage(typeof(OptionsPage));
             Instance = this;
+
+            if (!Directory.Exists(TempDir)) {
+                try {
+                    Directory.CreateDirectory(TempDir);
+                }
+                catch (Exception e) {
+                    Log($"Failed to create temp dir. This will cause problems. Exception is below\n{e}", true);
+                }
+            } else {
+                CleanupTempFiles();
+            }
 
             //Log needs the dte object
             dte = GetGlobalService(typeof(DTE)) as DTE;
@@ -499,13 +419,16 @@ namespace LOSTALLOY.LocalHistory {
             //previous logs will be Debug.WriteLine only
             Log($"Entering {nameof(Initialize)}");
 
-            var solution = (IVsSolution) GetService(typeof(SVsSolution));
+            var solution = (IVsSolution)GetService(typeof(SVsSolution));
 
-            var adviseResult = solution.AdviseSolutionEvents(this, out solutionCookie);
+            var adviseResult = solution.AdviseSolutionEvents(this, out _);
             if (adviseResult != VSConstants.S_OK) {
                 Log($"Failed to AdviseSolutionEvents. Will not initialize. Error code is: {adviseResult}");
                 return;
             }
+
+            //since this auto-loads after the solution is completely loaded, the event might not run. So we run it safely.
+            SolutionLoadCompleteHandler();
 
             // Add our command handlers for menu (commands must exist in the .vsct file)
             Log("Adding tool menu handler.");
@@ -527,6 +450,7 @@ namespace LOSTALLOY.LocalHistory {
             }
 
             ShowToolWindow(false);
+            TryUpdateToolWindowForCurrentSelectionIfAny();
         }
 
         #endregion
@@ -578,7 +502,154 @@ namespace LOSTALLOY.LocalHistory {
             }
         }
 
+
+        private void SolutionLoadCompleteHandler() {
+            // The solution name can be empty if the user opens a file without opening a solution
+            var maybeSolution = dte?.Solution;
+            if (maybeSolution != null && File.Exists(maybeSolution.FullName)) {
+                UnregisterDocumentListener();
+                RegisterDocumentListener();
+
+                UnregisterSelectionListener();
+                RegisterSelectionListener();
+            } else {
+                Log($"Did not register document listener. dte.Solution==null? {(maybeSolution == null ? "YES" : $"NO (dte.Solution.FullName: {maybeSolution?.FullName})")}, dte.Solution.FullName:\"{maybeSolution?.FullName ?? "EMPTY"}\"");
+            }
+        }
+
+
+        private void SolutionCloseHandler() {
+            UnregisterDocumentListener();
+            UnregisterSelectionListener();
+            UpdateToolWindow();
+
+        }
+
+
+        private void CleanupTempFiles() {
+            if (!Directory.Exists(TempDir)) {
+                return;
+            }
+
+            var tempDirInfo = new DirectoryInfo(TempDir);
+            var tempFiles = tempDirInfo.GetFiles("LocalHistory_*");
+            LogTrace($"Cleaning up {tempFiles.Length} temporary files on {TempDir}");
+            foreach (var fileInfo in tempFiles) {
+                try {
+                    fileInfo.Delete();
+                }
+                catch (Exception e) {
+                    LogTrace($"Failed to delete temporary file {fileInfo.Name}. Exception is below\n{e}");
+                }
+            }
+        }
+
         #endregion
+
+
+        /// <inheritdoc />
+        int IVsSolutionLoadEvents.OnBeforeOpenSolution(string pszSolutionFilename) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionLoadEvents.OnBeforeBackgroundSolutionLoadBegins() {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionLoadEvents.OnQueryBackgroundLoadProjectBatch(out bool pfShouldDelayLoadToNextIdle) {
+            pfShouldDelayLoadToNextIdle = false;
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionLoadEvents.OnBeforeLoadProjectBatch(bool fIsBackgroundIdleBatch) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionLoadEvents.OnAfterLoadProjectBatch(bool fIsBackgroundIdleBatch) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <summary>
+        ///     When a solution is opened, this function creates a new <code>DocumentRepository</code> and
+        ///     registers the <code>LocalHistoryDocumentListener</code> to listen for save events.
+        /// </summary>
+        int IVsSolutionLoadEvents.OnAfterBackgroundSolutionLoadComplete() {
+            Log("Entering OnAfterBackgroundSolutionLoadComplete()");
+            SolutionLoadCompleteHandler();
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnQueryCloseProject(IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnBeforeCloseProject(IVsHierarchy pHierarchy, int fRemoved) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnQueryUnloadProject(IVsHierarchy pRealHierarchy, ref int pfCancel) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnBeforeUnloadProject(IVsHierarchy pRealHierarchy, IVsHierarchy pStubHierarchy) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnAfterOpenSolution(object pUnkReserved, int fNewSolution) {
+            Log("Entering OnAfterOpenSolution()");
+            SolutionLoadCompleteHandler();
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) {
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnBeforeCloseSolution(object pUnkReserved) {
+            SolutionCloseHandler();
+            return VSConstants.S_OK;
+        }
+
+
+        /// <inheritdoc />
+        int IVsSolutionEvents.OnAfterCloseSolution(object pUnkReserved) {
+            return VSConstants.S_OK;
+        }
 
     }
 }

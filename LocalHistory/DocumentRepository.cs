@@ -13,12 +13,12 @@
 namespace LOSTALLOY.LocalHistory {
     using System;
     using System.Collections.Generic;
-    using System.IO;
+    using Alphaleonis.Win32.Filesystem;
     using System.Linq;
     using JetBrains.Annotations;
 
 
-    internal class DocumentRepository {
+    internal sealed class DocumentRepository {
 
         #region Constructors and Destructors
 
@@ -33,7 +33,7 @@ namespace LOSTALLOY.LocalHistory {
                 Directory.CreateDirectory(RepositoryDirectory);
             }
 
-            File.SetAttributes(RepositoryDirectory, FileAttributes.Hidden);
+            File.SetAttributes(RepositoryDirectory, System.IO.FileAttributes.Hidden);
         }
 
 
@@ -72,7 +72,7 @@ namespace LOSTALLOY.LocalHistory {
                     Control = (LocalHistoryControl)LocalHistoryPackage.Instance.ToolWindow?.Content;
                 }
 
-                if (Control?.LatestDocument.OriginalPath.Equals(newNode.OriginalPath) == true) {
+                if (Control?.LatestDocument?.OriginalPath.Equals(newNode.OriginalPath) == true) {
                     Control.DocumentItems.Insert(0, newNode);
                 }
             }

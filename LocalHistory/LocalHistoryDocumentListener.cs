@@ -14,9 +14,7 @@
 namespace LOSTALLOY.LocalHistory {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Collections.ObjectModel;
-    using System.Linq;
     using Microsoft.VisualStudio;
     using Microsoft.VisualStudio.Shell.Interop;
     using Utilities;
@@ -28,7 +26,7 @@ namespace LOSTALLOY.LocalHistory {
 
         private readonly IVsRunningDocumentTable documentTable;
         private readonly DocumentRepository documentRepository;
-        private ImmutableHashSet<uint> _dirtyDocCookie = ImmutableHashSet<uint>.Empty;
+        private readonly HashSet<uint> _dirtyDocCookie = new HashSet<uint>();
 
         #endregion
 
@@ -74,12 +72,14 @@ namespace LOSTALLOY.LocalHistory {
             var filePath = Utils.NormalizePath(pbstrMkDocument);
 
             if (LocalHistoryPackage.Instance.OptionsPage.CreateRevisionOnlyIfDirty) {
-                if (!_dirtyDocCookie.Contains(docCookie)) {
-                    LocalHistoryPackage.Log($"File \"{filePath}\" is not dirty. Will not create version.");
-                    return VSConstants.S_OK;
-                }
+                lock (_dirtyDocCookie) {
+                    if (!_dirtyDocCookie.Contains(docCookie)) {
+                        LocalHistoryPackage.Log($"File \"{filePath}\" is not dirty. Will not create version.");
+                        return VSConstants.S_OK;
+                    }
 
-                _dirtyDocCookie.Remove(docCookie);
+                    _dirtyDocCookie.Remove(docCookie);
+                }
             }
 
             LocalHistoryPackage.Log($"Creating version for file \"{filePath}\" (is dirty).");
@@ -118,9 +118,13 @@ namespace LOSTALLOY.LocalHistory {
 
             uint target = (uint)(__VSRDTATTRIB.RDTA_DocDataIsDirty);
             if (0 != (target & grfAttribs)) {
-                _dirtyDocCookie = _dirtyDocCookie.Add(docCookie);
+                lock (_dirtyDocCookie) {
+                    _dirtyDocCookie.Add(docCookie);
+                }
             } else {
-                _dirtyDocCookie = _dirtyDocCookie.Remove(docCookie);
+                lock (_dirtyDocCookie) {
+                    _dirtyDocCookie.Remove(docCookie);
+                }
             }
 
             return VSConstants.S_OK;

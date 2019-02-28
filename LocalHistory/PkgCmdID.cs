@@ -2,14 +2,13 @@
 // MUST match PkgCmdID.h
 
 // ReSharper disable IdentifierTypo
-namespace LOSTALLOY.LocalHistory
-{
-    using System;
+// ReSharper disable InconsistentNaming
 
+namespace LOSTALLOY.LocalHistory {
+    internal static class PkgCmdIDList {
 
-    static class PkgCmdIDList {
-        public const uint cmdidLocalHistoryMenuItem =        0x100;
-        public const uint cmdidLocalHistoryWindow =    0x101;
+        public const uint cmdidLocalHistoryMenuItem = 0x100;
+        public const uint cmdidLocalHistoryWindow = 0x101;
 
-    };
+    }
 }

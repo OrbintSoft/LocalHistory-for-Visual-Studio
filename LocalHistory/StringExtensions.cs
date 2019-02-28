@@ -11,7 +11,7 @@
 
 namespace LOSTALLOY.LocalHistory {
     using System;
-    using System.IO;
+    using Alphaleonis.Win32.Filesystem;
     using System.Text;
     using JetBrains.Annotations;
 

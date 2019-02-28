@@ -28,6 +28,7 @@ namespace LOSTALLOY.LocalHistory {
         private bool _singleFrameForInternalDiffTool = true;
         private string _diffToolPath;
         private string _diffToolArgs = "{then} {now}";
+        private bool _enforceShortPathsWithExternalDiffTool = true;
 
         #endregion
 
@@ -76,6 +77,15 @@ namespace LOSTALLOY.LocalHistory {
         public string DiffToolArgs {
             get => _diffToolArgs;
             set => _diffToolArgs = value;
+        }        
+
+        [Category("2. Diff")]
+        [DisplayName("4. Pass Short Paths with Diff Tool")]
+        [Description("If this is enabled, a copy of the versioned file in the repository will be made in the temp dir. This copy will always have a short path (truncated, if necessary).\n"
+                     + "This avoids issues with programs that don't support long file paths.")]
+        public bool EnforceShortPathsWithExternalDiffTool {
+            get => _enforceShortPathsWithExternalDiffTool;
+            set => _enforceShortPathsWithExternalDiffTool = value;
         }
 
         [Category("3. Troubleshooting")]
