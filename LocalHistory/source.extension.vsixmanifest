@@ -1,27 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="48473bd6-841e-4368-8c7a-a5ea9fad7081" Version="2.1.1" Language="en-US" Publisher="LOSTALLOY" />
+        <Identity Id="48473bd6-841e-4368-8c7a-a5ea9fad7081" Version="3.0.0" Language="en-US" Publisher="LOSTALLOY" />
         <DisplayName>Local History for Visual Studio</DisplayName>
         <Description xml:space="preserve">Local History for Visual Studio automatically creates a copy everytime you save a file.</Description>
         <MoreInfo>https://github.com/LostAlloy/LocalHistory-for-Visual-Studio</MoreInfo>
         <License>License.txt</License>
         <ReleaseNotes>CHANGELOG.MD</ReleaseNotes>
         <Tags>Source Control</Tags>
+        <Preview>true</Preview>
     </Metadata>
     <Installation InstalledByMsi="false">
-        <InstallationTarget Version="[15.0,16.0)" Id="Microsoft.VisualStudio.Community" />
-        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[15.0,16.0)" />
-        <InstallationTarget Version="[15.0,16.0)" Id="Microsoft.VisualStudio.Enterprise" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Community" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[16.0,17.0)" />
+        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise" />
     </Installation>
     <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />
-        <Dependency Id="Microsoft.VisualStudio.MPF.11.0" DisplayName="Visual Studio MPF 11.0" d:Source="Installed" Version="11.0" />
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.7.2" d:InstallSource="Download" Location="http://go.microsoft.com/fwlink/?linkid=863262" />
+        <Dependency Id="Microsoft.VisualStudio.MPF.16.0" DisplayName="Visual Studio MPF 16.0" d:Source="Installed" Version="[16.0,17.0)" />
     </Dependencies>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" repositoryPath="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     </Assets>
     <Prerequisites>
-        <Prerequisite DisplayName="Visual Studio core editor" Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0.26208.0,16.0)" />
+        <Prerequisite DisplayName="Visual Studio core editor" Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.1.28811.260,17.0)" />
     </Prerequisites>
 </PackageManifest>
