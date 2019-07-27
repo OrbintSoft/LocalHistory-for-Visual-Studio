@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 16
+VisualStudioVersion = 16.0.0
+MinimumVisualStudioVersion = 16.0.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalHistory", "LocalHistory\LocalHistory.csproj", "{47F22155-F29E-417B-9F72-08D503DF18F9}"
 EndProject
 Global
