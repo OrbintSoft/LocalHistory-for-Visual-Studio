@@ -94,11 +94,9 @@ namespace LOSTALLOY.LocalHistory {
             if (revNode != null && items?.Contains(revNode) == false) {
                 LocalHistoryPackage.Log($"Adding file \"{filePath}\" to list.");
                 items.Insert(0, revNode);
-                LocalHistoryPackage.Instance.UpdateToolWindow("", true);
-                return VSConstants.S_OK;
             }
 
-            LocalHistoryPackage.Log($"File \"{filePath}\" is already in list. Doing nothing.");
+            LocalHistoryPackage.Instance.UpdateToolWindow("", true);
             return VSConstants.S_OK;
         }
 
