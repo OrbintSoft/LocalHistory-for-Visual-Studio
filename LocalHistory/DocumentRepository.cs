@@ -72,7 +72,7 @@ namespace LOSTALLOY.LocalHistory {
                     Control = (LocalHistoryControl)LocalHistoryPackage.Instance.ToolWindow?.Content;
                 }
 
-                if (Control?.LatestDocument.OriginalPath.Equals(newNode.OriginalPath) == true) {
+                if (Control?.LatestDocument?.OriginalPath?.Equals(newNode.OriginalPath) == true) {
                     Control.DocumentItems.Insert(0, newNode);
                 }
             }
