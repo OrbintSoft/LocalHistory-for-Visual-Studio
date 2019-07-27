@@ -238,7 +238,12 @@ namespace LOSTALLOY.LocalHistory {
                 return revisions;
             }
 
-            string[] revisionFiles = Directory.GetFiles(revisionsPath);
+            string[] revisionFiles = Array.Empty<string>();
+            if (Directory.Exists(revisionsPath))
+            {
+                revisionFiles = Directory.GetFiles(revisionsPath);
+            }
+
             if (Directory.Exists(oldFormatRevisionsPath)) {
                 revisionFiles = revisionFiles.Union(Directory.GetFiles(oldFormatRevisionsPath)).ToArray();
                 LocalHistoryPackage.Log(
