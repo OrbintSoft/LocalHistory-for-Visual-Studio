@@ -3,32 +3,26 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace LOSTALLOY.LocalHistory {
+namespace LOSTALLOY.LocalHistory
+{
     using System;
     using System.IO;
-
     using JetBrains.Annotations;
 
-
-    public class DocumentNode {
-
-        #region Static Fields
-
+    /// <summary>
+    /// A Document Node reesent a versioned file.
+    /// </summary>
+    public class DocumentNode
+    {
         // Epoch used for converting to unix time.
         private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
-
-        #endregion
-
-
-        #region Fields
-
         [NotNull]
         private readonly string repositoryPath;
 
@@ -38,176 +32,223 @@ namespace LOSTALLOY.LocalHistory {
         [NotNull]
         private readonly string originalFileName;
 
-        private readonly string _unixTime;
+        private readonly string unixTime;
+
+        private readonly DateTime time;
 
         [CanBeNull]
-        private string _label;
+        private string label;
 
-        private DateTime _time;
-
-        #endregion
-
-
-        #region Constructors and Destructors
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentNode"/> class.
+        /// </summary>
+        /// <param name="repositoryPath">The repository path.</param>
+        /// <param name="originalPath">The original path.</param>
+        /// <param name="originalFileName">The original file name.</param>
+        /// <param name="time">The time.</param>
         public DocumentNode(
             [NotNull] string repositoryPath,
             [NotNull] string originalPath,
             [NotNull] string originalFileName,
-            DateTime time):
-            this(repositoryPath, originalPath, originalFileName, ToUnixTime(time).ToString()) { }
+            DateTime time)
+            : this(repositoryPath, originalPath, originalFileName, ToUnixTime(time).ToString())
+        {
+        }
 
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentNode"/> class.
+        /// </summary>
+        /// <param name="repositoryPath">The repository path.</param>
+        /// <param name="originalPath">The original path.</param>
+        /// <param name="originalFileName">The original file name.</param>
+        /// <param name="unixTime">The time in unix timestamp format.</param>
+        /// <param name="label">The labl.</param>
         public DocumentNode(
             [NotNull] string repositoryPath,
             [NotNull] string originalPath,
             [NotNull] string originalFileName,
             string unixTime,
-            [CanBeNull] string label = null) {
+            [CanBeNull] string label = null)
+        {
             this.repositoryPath = Utils.NormalizePath(repositoryPath);
             this.originalPath = Utils.NormalizePath(originalPath);
             this.originalFileName = originalFileName;
-            _unixTime = unixTime;
-            _time = ToDateTime(_unixTime);
-            _label = label;
+            this.unixTime = unixTime;
+            this.time = ToDateTime(this.unixTime);
+            this.label = label;
         }
 
-        #endregion
-
-
-        #region Public Properties
-
-        public bool HasLabel => !string.IsNullOrEmpty(_label);
-
-        public string VersionFileFullFilePath => Path.Combine(RepositoryPath, VersionFileName);
-        public string VersionFileName => $"{_unixTime}${originalFileName}{(HasLabel ? $"${_label}" : "")}";
-
-        [NotNull]
-        public string RepositoryPath => repositoryPath;
-
-        [NotNull]
-        public string OriginalPath => originalPath;
-
-        [NotNull]
-        public string OriginalFileName => originalFileName;
-
-        [CanBeNull]
-        public string Label => _label;
+        /// <summary>
+        /// Gets a value indicating whether a Label has been set.
+        /// </summary>
+        public bool HasLabel => !string.IsNullOrEmpty(this.label);
 
         /// <summary>
-        ///     xaml binding. We only store seconds, so we can't have .f and fiends.
+        /// Gets the full path of the versioned file.
+        /// </summary>
+        public string VersionFileFullFilePath => Path.Combine(this.RepositoryPath, this.VersionFileName);
+
+        /// <summary>
+        /// Gets the name of the versioned file.
+        /// </summary>
+        public string VersionFileName => $"{this.unixTime}${this.originalFileName}{(this.HasLabel ? $"${this.label}" : string.Empty)}";
+
+        /// <summary>
+        /// Gets the path of the repository.
+        /// </summary>
+        [NotNull]
+        public string RepositoryPath => this.repositoryPath;
+
+        /// <summary>
+        /// Gets the original path.
+        /// </summary>
+        [NotNull]
+        public string OriginalPath => this.originalPath;
+
+        /// <summary>
+        /// Gets the original file name.
+        /// </summary>
+        [NotNull]
+        public string OriginalFileName => this.originalFileName;
+
+        /// <summary>
+        /// Gets the label.
+        /// </summary>
+        [CanBeNull]
+        public string Label => this.label;
+
+        /// <summary>
+        ///     Gets xaml binding. We only store seconds, so we can't have .f and fiends.
         /// </summary>
         [NotNull]
         [UsedImplicitly]
-        public string Timestamp => $"{_time:dd/MM/yyyy HH:mm:ss}";
+        public string Timestamp => $"{this.time:dd/MM/yyyy HH:mm:ss}";
 
+        /// <summary>
+        /// Gets the timestamp with the label.
+        /// </summary>
         [NotNull]
-        public string TimestampAndLabel => $"{_time:dd/MM/yyyy HH:mm:ss}{(HasLabel ? $" {_label}" : "")}";
+        public string TimestampAndLabel => $"{this.time:dd/MM/yyyy HH:mm:ss}{(this.HasLabel ? $" {this.label}" : string.Empty)}";
 
-        #endregion
-
-
-        #region Public Methods and Operators
-
-        /// <inheritdoc />
-        public static bool operator ==(DocumentNode left, DocumentNode right) {
+        public static bool operator ==(DocumentNode left, DocumentNode right)
+        {
             return Equals(left, right);
         }
 
-
-        /// <inheritdoc />
-        public static bool operator !=(DocumentNode left, DocumentNode right) {
+        public static bool operator !=(DocumentNode left, DocumentNode right)
+        {
             return !Equals(left, right);
         }
 
-
-        /// <inheritdoc />
-        public bool Equals([CanBeNull] DocumentNode other) {
-            if (ReferenceEquals(null, other)) {
+        /// <summary>
+        /// Check with the other document equals to this.
+        /// </summary>
+        /// <param name="other">The other document.</param>
+        /// <returns>True if the document is equal.</returns>
+        public bool Equals([CanBeNull] DocumentNode other)
+        {
+            if (other is null)
+            {
                 return false;
             }
 
-            if (ReferenceEquals(this, other)) {
-                return true;
-            }
-        
-            //see comment ID 02:07 11/04/2017 for why label and repositoryPath are not included here
-            return string.Equals(originalPath, other.originalPath, StringComparison.OrdinalIgnoreCase)
-                   && string.Equals(originalFileName, other.originalFileName, StringComparison.OrdinalIgnoreCase)
-                   && string.Equals(_unixTime, other._unixTime, StringComparison.OrdinalIgnoreCase);
-        }
-
-
-        /// <inheritdoc />
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(null, obj)) {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj)) {
+            if (ReferenceEquals(this, other))
+            {
                 return true;
             }
 
-            if (obj.GetType() != GetType()) {
+            // see comment ID 02:07 11/04/2017 for why label and repositoryPath are not included here
+            return string.Equals(this.originalPath, other.originalPath, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(this.originalFileName, other.originalFileName, StringComparison.OrdinalIgnoreCase)
+                   && string.Equals(this.unixTime, other.unixTime, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
+        {
+            if (obj is null)
+            {
                 return false;
             }
 
-            return Equals((DocumentNode)obj);
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((DocumentNode)obj);
         }
 
-
         /// <inheritdoc />
-        public override int GetHashCode() {
-            unchecked {
-                //comment ID 02:07 11/04/2017
-                //label is not part of hashcode.
-                //we only care for the original file and the timestamp
-                //for this reason, we also don't include the repositoryPath
-                //two nodes are the considered the same if they are a version for the same file
-                //take at the same time. Nothing more.
-                var hashCode = StringComparer.OrdinalIgnoreCase.GetHashCode(originalPath);
-                hashCode = (hashCode * 397) ^ StringComparer.OrdinalIgnoreCase.GetHashCode(originalFileName);
-                hashCode = (hashCode * 397) ^ StringComparer.OrdinalIgnoreCase.GetHashCode(_unixTime);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                // comment ID 02:07 11/04/2017
+                // label is not part of hashcode.
+                // we only care for the original file and the timestamp
+                // for this reason, we also don't include the repositoryPath
+                // two nodes are the considered the same if they are a version for the same file
+                // take at the same time. Nothing more.
+                var hashCode = StringComparer.OrdinalIgnoreCase.GetHashCode(this.originalPath);
+                hashCode = (hashCode * 397) ^ StringComparer.OrdinalIgnoreCase.GetHashCode(this.originalFileName);
+                hashCode = (hashCode * 397) ^ StringComparer.OrdinalIgnoreCase.GetHashCode(this.unixTime);
                 return hashCode;
             }
         }
 
-
-        public void AddLabel(string label) {
-            var currentFullPath = Path.Combine(RepositoryPath, VersionFileName);
-            _label = label;
-            var newFullPath = Path.Combine(RepositoryPath, VersionFileName);
+        /// <summary>
+        /// Add a label to the document.
+        /// </summary>
+        /// <param name="label">The label.</param>
+        public void AddLabel(string label)
+        {
+            var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
+            this.label = label;
+            var newFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
             File.Move(currentFullPath, newFullPath);
         }
 
-
-        public void RemoveLabel() {
-            if (!HasLabel) {
+        /// <summary>
+        /// Remove the label.
+        /// </summary>
+        public void RemoveLabel()
+        {
+            if (!this.HasLabel)
+            {
                 return;
             }
 
-            var currentFullPath = Path.Combine(RepositoryPath, VersionFileName);
-            var fileNameWithoutLabel = VersionFileName.Substring(0, VersionFileName.Length - $"${_label}".Length);
-            var newFullPath = Path.Combine(RepositoryPath, fileNameWithoutLabel);
+            var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
+            var fileNameWithoutLabel = this.VersionFileName.Substring(0, this.VersionFileName.Length - $"${this.label}".Length);
+            var newFullPath = Path.Combine(this.RepositoryPath, fileNameWithoutLabel);
             File.Move(currentFullPath, newFullPath);
-            _label = null;
+            this.label = null;
         }
 
-        #endregion
-
-
-        #region Methods
-
-        private static DateTime ToDateTime(string unixTime) {
+        /// <summary>
+        /// Convert the unix timestamp in a <see cref="DateTime">DateTime</see> format.
+        /// </summary>
+        /// <param name="unixTime">The unix timestamp.</param>
+        /// <returns>The converted <see cref="DateTime"></returns>.
+        private static DateTime ToDateTime(string unixTime)
+        {
             return EPOCH.ToLocalTime().AddSeconds(long.Parse(unixTime));
         }
 
-
-        private static long ToUnixTime(DateTime dateTime) {
-            return (long) (dateTime - EPOCH.ToLocalTime()).TotalSeconds;
+        /// <summary>
+        /// Convert a <see cref="DateTime">DateTime</see> ti unix timestamp.
+        /// </summary>
+        /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
+        /// <returns>The converted date in timetsamp format.</returns>
+        private static long ToUnixTime(DateTime dateTime)
+        {
+            return (long)(dateTime - EPOCH.ToLocalTime()).TotalSeconds;
         }
-
-        #endregion
-
     }
 }

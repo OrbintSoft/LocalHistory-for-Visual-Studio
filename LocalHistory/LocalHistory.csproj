@@ -143,6 +143,7 @@
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
+    <None Include="stylecop.json" />
   </ItemGroup>
   <ItemGroup>
     <VSCTCompile Include="LocalHistory.vsct">
