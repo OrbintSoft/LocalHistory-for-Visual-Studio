@@ -32,6 +32,7 @@ namespace LOSTALLOY.LocalHistory
         [NotNull]
         private readonly string originalFileName;
 
+        [NotNull]
         private readonly string unixTime;
 
         private readonly DateTime time;
@@ -67,9 +68,30 @@ namespace LOSTALLOY.LocalHistory
             [NotNull] string repositoryPath,
             [NotNull] string originalPath,
             [NotNull] string originalFileName,
-            string unixTime,
+            [NotNull] string unixTime,
             [CanBeNull] string label = null)
         {
+
+            if (repositoryPath is null)
+            {
+                throw new ArgumentNullException(nameof(repositoryPath));
+            }
+
+            if (originalPath is null)
+            {
+                throw new ArgumentNullException(nameof(originalPath));
+            }
+
+            if (originalFileName is null)
+            {
+                throw new ArgumentNullException(nameof(originalFileName));
+            }
+
+            if (unixTime is null)
+            {
+                throw new ArgumentNullException(nameof(unixTime));
+            }
+
             this.repositoryPath = Utils.NormalizePath(repositoryPath);
             this.originalPath = Utils.NormalizePath(originalPath);
             this.originalFileName = originalFileName;
