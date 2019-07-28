@@ -6,7 +6,7 @@ Local History for Visual Studio automatically creates a history of your files ev
 
 Requirements
 ----------------------------------------------
-This is for is for Visual Studio 2017. For older versions, use the original one: [local-history-visual-studio](https://github.com/curzona/local-history-visual-studio)
+This is an experimental version for visual studio 2019, I don't intend to suppport older versions.
 
 
 Usage
