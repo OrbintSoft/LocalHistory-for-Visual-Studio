@@ -14,6 +14,7 @@ namespace LOSTALLOY.LocalHistory
 {
     using System;
     using System.IO;
+    using System.Regex;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -71,26 +72,7 @@ namespace LOSTALLOY.LocalHistory
             [NotNull] string unixTime,
             [CanBeNull] string label = null)
         {
-
-            if (repositoryPath is null)
-            {
-                throw new ArgumentNullException(nameof(repositoryPath));
-            }
-
-            if (originalPath is null)
-            {
-                throw new ArgumentNullException(nameof(originalPath));
-            }
-
-            if (originalFileName is null)
-            {
-                throw new ArgumentNullException(nameof(originalFileName));
-            }
-
-            if (unixTime is null)
-            {
-                throw new ArgumentNullException(nameof(unixTime));
-            }
+            ValidateParameters(repositoryPath, originalPath, originalFileName, unixTime);
 
             this.repositoryPath = Utils.NormalizePath(repositoryPath);
             this.originalPath = Utils.NormalizePath(originalPath);
@@ -271,6 +253,98 @@ namespace LOSTALLOY.LocalHistory
         private static long ToUnixTime(DateTime dateTime)
         {
             return (long)(dateTime - EPOCH.ToLocalTime()).TotalSeconds;
+        }
+
+        /// <summary>
+        /// Validate parameters to check if they are valid.
+        /// </summary>
+        /// <param name="repositoryPath">The path of repository, it should be a valid string path.</param>
+        /// <param name="originalPath">The original path, it should be a valid string path.</param>
+        /// <param name="originalFileName">The original file name, it should be a valid file name.</param>
+        /// <param name="unixTime">The unix timestamp, it should be a valid timestamp. </param>
+        private static void ValidateParameters(string repositoryPath, string originalPath, string originalFileName, string unixTime)
+        {
+            if (repositoryPath is null)
+            {
+                throw new ArgumentNullException(nameof(repositoryPath));
+            }
+
+            if (originalPath is null)
+            {
+                throw new ArgumentNullException(nameof(originalPath));
+            }
+
+            if (originalFileName is null)
+            {
+                throw new ArgumentNullException(nameof(originalFileName));
+            }
+
+            if (unixTime is null)
+            {
+                throw new ArgumentNullException(nameof(unixTime));
+            }
+
+            if (!IsValidPath(repositoryPath))
+            {
+                throw new ArgumentException("Path is invalid", nameof(repositoryPath));
+            }
+
+            if (!IsValidPath(originalPath))
+            {
+                throw new ArgumentException("Path is invalid", nameof(originalPath));
+            }
+
+            if (!IsValidFilename(originalFileName))
+            {
+                throw new ArgumentException("File name is invalid ", nameof(originalFileName));
+            }
+
+            if (!long.TryParse(unixTime, out _))
+            {
+                throw new ArgumentException("Unix timestamp format is invalid ", nameof(unixTime));
+            }
+        }
+
+        /// <summary>
+        /// Check if a a path is valid under windows.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <returns>true if the path is valid.</returns>
+        private static bool IsValidPath(string path)
+        {
+            var driveCheck = new Regex(@"^[a-zA-Z]:\\$");
+            if (!driveCheck.IsMatch(path.Substring(0, 3)))
+            {
+                return false;
+            }
+
+            var strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
+            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
+            var containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
+            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the given file name is valid under windows.
+        /// </summary>
+        /// <param name="fileName">The file name to check.</param>
+        /// <returns>true if the file name is valid.</returns>
+        private static bool IsValidFilename(string fileName)
+        {
+            var containsABadCharacter = new Regex("["
+                  + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
+            if (containsABadCharacter.IsMatch(fileName))
+            {
+                return false;
+            }
+
+            // other checks for UNC, drive-path format, etc
+            return true;
         }
     }
 }
