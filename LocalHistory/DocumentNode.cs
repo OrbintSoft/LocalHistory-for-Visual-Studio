@@ -63,7 +63,7 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="originalPath">The original path.</param>
         /// <param name="originalFileName">The original file name.</param>
         /// <param name="unixTime">The time in unix timestamp format.</param>
-        /// <param name="label">The labl.</param>
+        /// <param name="label">The label.</param>
         public DocumentNode(
             [NotNull] string repositoryPath,
             [NotNull] string originalPath,

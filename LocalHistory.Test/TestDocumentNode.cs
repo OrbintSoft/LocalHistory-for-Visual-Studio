@@ -1,6 +1,8 @@
 ﻿using LOSTALLOY.LocalHistory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
+using FluentAssertions;
 
 namespace LocalHistory.Test
 {
@@ -10,8 +12,25 @@ namespace LocalHistory.Test
         [TestMethod]
         public void Constructor()
         {
-            var documentNode = new DocumentNode(null, null, null, DateTime.Now);
-            
+            //Test Null
+            var a = new Action(() => { new DocumentNode(null, "B", "C", DateTime.Now); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "repositoryPath");
+            a = new Action(() => { new DocumentNode("A", null, "C", DateTime.Now); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "originalPath");
+            a = new Action(() => { new DocumentNode("A", "B", null, DateTime.Now); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "originalFileName");
+            a = new Action(() => { new DocumentNode("A", "B", "C", null); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "unixTime");
+
+            //Test parameters
+            var currentDate = DateTime.Now;
+            var d = new DocumentNode("A", "B", "C", DateTime.MinValue);
+            d.RepositoryPath.Should().Be("A");
+            d.OriginalPath.Should().Be("B");
+            d.RepositoryPath.Should().Be("C");
+
+            // d = new DocumentNode("D", "E", "F", "G");
+
         }
     }
 }
