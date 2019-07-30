@@ -72,7 +72,7 @@ namespace LOSTALLOY.LocalHistory
             [NotNull] string unixTime,
             [CanBeNull] string label = null)
         {
-            ValidateParameters(repositoryPath, originalPath, originalFileName, unixTime);
+            ValidateParameters(repositoryPath, originalPath, originalFileName, unixTime, label);
 
             this.repositoryPath = Utils.NormalizePath(repositoryPath);
             this.originalPath = Utils.NormalizePath(originalPath);
@@ -262,7 +262,8 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="originalPath">The original path, it should be a valid string path.</param>
         /// <param name="originalFileName">The original file name, it should be a valid file name.</param>
         /// <param name="unixTime">The unix timestamp, it should be a valid timestamp. </param>
-        private static void ValidateParameters(string repositoryPath, string originalPath, string originalFileName, string unixTime)
+        /// <param name="label"> The label should contains valid chars. </param>
+        private static void ValidateParameters(string repositoryPath, string originalPath, string originalFileName, string unixTime, string label)
         {
             if (repositoryPath is null)
             {
@@ -303,6 +304,11 @@ namespace LOSTALLOY.LocalHistory
             {
                 throw new ArgumentException("Unix timestamp format is invalid ", nameof(unixTime));
             }
+
+            if (label != null)
+            {
+                // TODO: check if label is valid
+            }
         }
 
         /// <summary>
@@ -338,12 +344,13 @@ namespace LOSTALLOY.LocalHistory
         {
             var containsABadCharacter = new Regex("["
                   + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
+
+
             if (containsABadCharacter.IsMatch(fileName))
             {
                 return false;
             }
 
-            // other checks for UNC, drive-path format, etc
             return true;
         }
     }
