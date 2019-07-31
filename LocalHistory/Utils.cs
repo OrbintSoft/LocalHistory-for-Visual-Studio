@@ -25,13 +25,18 @@ namespace LOSTALLOY.LocalHistory
         private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
 
         /// <summary>
-        /// Normalize the given path to a valid path.
+        /// Normalize the given path with the right path separator.
         /// </summary>
         /// <param name="path">The path to be normalized.</param>
         /// <returns>The normalized path.</returns>
         [NotNull]
         public static string NormalizePath([NotNull] string path)
         {
+            if (path is null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
             return Path.GetFullPath(path.Replace('/', Path.PathSeparator));
         }
 
@@ -41,7 +46,8 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="filePath">The path of the file.</param>
         /// <param name="solutionDirectory">The solution directory.</param>
         /// <returns>The repositort path for that file.</returns>
-        public static string GetRepositoryPathForFile(string filePath, string solutionDirectory)
+        [NotNull]
+        public static string GetRepositoryPathForFile([NotNull] string filePath, [NotNull] string solutionDirectory)
         {
             var fileParentPath = Path.GetDirectoryName(filePath);
             string repositoryPath = null;
@@ -73,7 +79,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="solutionDirectory">The path of the solution.</param>
         /// <returns>The path of the repository.</returns>
-        public static string GetRootRepositoryPath(string solutionDirectory)
+        [NotNull]
+        public static string GetRootRepositoryPath([NotNull] string solutionDirectory)
         {
             return Path.Combine(solutionDirectory, ".localhistory");
         }
@@ -83,9 +90,9 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="unixTime">The unix timestamp.</param>
         /// <returns>The converted <see cref="DateTime"></returns>.
-        public static DateTime ToDateTime(string unixTime)
+        public static DateTime ToDateTime(long unixTime)
         {
-            return EPOCH.ToLocalTime().AddSeconds(long.Parse(unixTime));
+            return EPOCH.ToLocalTime().AddSeconds(unixTime);
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace LocalHistory.Test
     public class TestUtils
     {
         [TestMethod]
-        public void TestMethod1()
+        public void TestNormalizePath()
         {
         }
     }

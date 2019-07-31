@@ -76,7 +76,7 @@ namespace LOSTALLOY.LocalHistory
             this.originalPath = Utils.NormalizePath(originalPath);
             this.originalFileName = originalFileName;
             this.unixTime = unixTime;
-            this.time = Utils.ToDateTime(this.unixTime);
+            this.time = Utils.ToDateTime(long.Parse(this.unixTime));
             this.label = label;
         }
 
