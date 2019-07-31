@@ -11,7 +11,9 @@
 
 namespace LOSTALLOY.LocalHistory
 {
+    using System;
     using System.IO;
+    using System.Regex;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -19,15 +21,18 @@ namespace LOSTALLOY.LocalHistory
     /// </summary>
     internal static class Utils
     {
+        // Epoch used for converting to unix time.
+        private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
+
         /// <summary>
         /// Normalize the given path to a valid path.
         /// </summary>
         /// <param name="path">The path to be normalized.</param>
         /// <returns>The normalized path.</returns>
         [NotNull]
-        public static string NormalizePath(string path)
+        public static string NormalizePath([NotNull] string path)
         {
-            return Path.GetFullPath(path.Replace('/', '\\'));
+            return Path.GetFullPath(path.Replace('/', Path.PathSeparator));
         }
 
         /// <summary>
@@ -71,6 +76,68 @@ namespace LOSTALLOY.LocalHistory
         public static string GetRootRepositoryPath(string solutionDirectory)
         {
             return Path.Combine(solutionDirectory, ".localhistory");
+        }
+
+        /// <summary>
+        /// Convert the unix timestamp in a <see cref="DateTime">DateTime</see> format.
+        /// </summary>
+        /// <param name="unixTime">The unix timestamp.</param>
+        /// <returns>The converted <see cref="DateTime"></returns>.
+        public static DateTime ToDateTime(string unixTime)
+        {
+            return EPOCH.ToLocalTime().AddSeconds(long.Parse(unixTime));
+        }
+
+        /// <summary>
+        /// Convert a <see cref="DateTime">DateTime</see> ti unix timestamp.
+        /// </summary>
+        /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
+        /// <returns>The converted date in timetsamp format.</returns>
+        public static long ToUnixTime(DateTime dateTime)
+        {
+            return (long)(dateTime - EPOCH.ToLocalTime()).TotalSeconds;
+        }
+
+        /// <summary>
+        /// Check if a a path is valid under windows.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <returns>true if the path is valid.</returns>
+        public static bool IsValidPath(string path)
+        {
+            var driveCheck = new Regex(@"^[a-zA-Z]:\\$");
+            if (!driveCheck.IsMatch(path.Substring(0, 3)))
+            {
+                return false;
+            }
+
+            var strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
+            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
+            var containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
+            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if the given file name is valid under windows.
+        /// </summary>
+        /// <param name="fileName">The file name to check.</param>
+        /// <returns>true if the file name is valid.</returns>
+        public static bool IsValidFilename(string fileName)
+        {
+            var containsABadCharacter = new Regex("["
+                  + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
+
+            if (containsABadCharacter.IsMatch(fileName))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

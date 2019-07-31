@@ -22,8 +22,6 @@ namespace LOSTALLOY.LocalHistory
     /// </summary>
     public class DocumentNode
     {
-        // Epoch used for converting to unix time.
-        private static readonly DateTime EPOCH = new DateTime(1970, 1, 1);
         [NotNull]
         private readonly string repositoryPath;
 
@@ -53,7 +51,7 @@ namespace LOSTALLOY.LocalHistory
             [NotNull] string originalPath,
             [NotNull] string originalFileName,
             DateTime time)
-            : this(repositoryPath, originalPath, originalFileName, ToUnixTime(time).ToString())
+            : this(repositoryPath, originalPath, originalFileName, Utils.ToUnixTime(time).ToString())
         {
         }
 
@@ -78,7 +76,7 @@ namespace LOSTALLOY.LocalHistory
             this.originalPath = Utils.NormalizePath(originalPath);
             this.originalFileName = originalFileName;
             this.unixTime = unixTime;
-            this.time = ToDateTime(this.unixTime);
+            this.time = Utils.ToDateTime(this.unixTime);
             this.label = label;
         }
 
@@ -236,26 +234,6 @@ namespace LOSTALLOY.LocalHistory
         }
 
         /// <summary>
-        /// Convert the unix timestamp in a <see cref="DateTime">DateTime</see> format.
-        /// </summary>
-        /// <param name="unixTime">The unix timestamp.</param>
-        /// <returns>The converted <see cref="DateTime"></returns>.
-        private static DateTime ToDateTime(string unixTime)
-        {
-            return EPOCH.ToLocalTime().AddSeconds(long.Parse(unixTime));
-        }
-
-        /// <summary>
-        /// Convert a <see cref="DateTime">DateTime</see> ti unix timestamp.
-        /// </summary>
-        /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
-        /// <returns>The converted date in timetsamp format.</returns>
-        private static long ToUnixTime(DateTime dateTime)
-        {
-            return (long)(dateTime - EPOCH.ToLocalTime()).TotalSeconds;
-        }
-
-        /// <summary>
         /// Validate parameters to check if they are valid.
         /// </summary>
         /// <param name="repositoryPath">The path of repository, it should be a valid string path.</param>
@@ -285,17 +263,17 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentNullException(nameof(unixTime));
             }
 
-            if (!IsValidPath(repositoryPath))
+            if (!Utils.IsValidPath(repositoryPath))
             {
                 throw new ArgumentException("Path is invalid", nameof(repositoryPath));
             }
 
-            if (!IsValidPath(originalPath))
+            if (!Utils.IsValidPath(originalPath))
             {
                 throw new ArgumentException("Path is invalid", nameof(originalPath));
             }
 
-            if (!IsValidFilename(originalFileName))
+            if (!Utils.IsValidFilename(originalFileName))
             {
                 throw new ArgumentException("File name is invalid ", nameof(originalFileName));
             }
@@ -309,49 +287,6 @@ namespace LOSTALLOY.LocalHistory
             {
                 // TODO: check if label is valid
             }
-        }
-
-        /// <summary>
-        /// Check if a a path is valid under windows.
-        /// </summary>
-        /// <param name="path">The path to check.</param>
-        /// <returns>true if the path is valid.</returns>
-        private static bool IsValidPath(string path)
-        {
-            var driveCheck = new Regex(@"^[a-zA-Z]:\\$");
-            if (!driveCheck.IsMatch(path.Substring(0, 3)))
-            {
-                return false;
-            }
-
-            var strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
-            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
-            var containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
-            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if the given file name is valid under windows.
-        /// </summary>
-        /// <param name="fileName">The file name to check.</param>
-        /// <returns>true if the file name is valid.</returns>
-        private static bool IsValidFilename(string fileName)
-        {
-            var containsABadCharacter = new Regex("["
-                  + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
-
-
-            if (containsABadCharacter.IsMatch(fileName))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
