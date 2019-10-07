@@ -285,7 +285,7 @@ namespace LOSTALLOY.LocalHistory
 
             if (label != null)
             {
-                // TODO: check if label is valid
+                
             }
         }
     }

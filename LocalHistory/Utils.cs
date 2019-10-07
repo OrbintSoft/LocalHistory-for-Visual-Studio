@@ -37,7 +37,14 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentNullException(nameof(path));
             }
 
-            return Path.GetFullPath(path.Replace('/', Path.PathSeparator));
+            path = path.Replace('/', Path.DirectorySeparatorChar);
+
+            if (!IsValidPath(path))
+            {
+                throw new ArgumentException("path is invalid", nameof(path));
+            }
+
+            return Path.GetFullPath(path);
         }
 
         /// <summary>
@@ -113,15 +120,22 @@ namespace LOSTALLOY.LocalHistory
         public static bool IsValidPath(string path)
         {
             var driveCheck = new Regex(@"^[a-zA-Z]:\\$");
-            if (!driveCheck.IsMatch(path.Substring(0, 3)))
+            var drive = false;
+            if (path.Length >= 3 && driveCheck.IsMatch(path.Substring(0, 3)))
             {
-                return false;
+                drive = true;
             }
 
             var strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
             strTheseAreInvalidFileNameChars += @":/?*" + "\"";
             var containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
-            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
+            string subpath = path;
+            if (drive)
+            {
+                subpath = path.Substring(3, path.Length - 3);
+            }
+
+            if (containsABadCharacter.IsMatch(subpath))
             {
                 return false;
             }
