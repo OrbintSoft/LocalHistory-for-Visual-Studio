@@ -28,7 +28,7 @@ namespace LOSTALLOY.LocalHistory
         /// Normalize the given path with the right path separator.
         /// </summary>
         /// <param name="path">The path to be normalized.</param>
-        /// <returns>The normalized path.</returns>
+        /// <returns>The normalized full path.</returns>
         [NotNull]
         public static string NormalizePath([NotNull] string path)
         {
@@ -37,7 +37,12 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentNullException(nameof(path));
             }
 
-            path = path.Replace('/', Path.DirectorySeparatorChar);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentException("path is invalid", nameof(path));
+            }
+
+            path = path.Replace('/', Path.DirectorySeparatorChar).Trim();
 
             if (!IsValidPath(path))
             {
@@ -56,19 +61,36 @@ namespace LOSTALLOY.LocalHistory
         [NotNull]
         public static string GetRepositoryPathForFile([NotNull] string filePath, [NotNull] string solutionDirectory)
         {
+            if (filePath is null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            if (solutionDirectory is null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
+
+            if (filePath.Trim() == string.Empty || !IsValidPath(filePath))
+            {
+                throw new ArgumentException("path is invalid", nameof(filePath));
+            }
+
+            if (solutionDirectory.Trim() == string.Empty || !IsValidPath(solutionDirectory))
+            {
+                throw new ArgumentException("path is invalid", nameof(solutionDirectory));
+            }
+
             var fileParentPath = Path.GetDirectoryName(filePath);
             string repositoryPath = null;
             if (!string.IsNullOrEmpty(fileParentPath))
             {
-                repositoryPath =
-                    fileParentPath
-                        .Replace(
-                            Path.VolumeSeparatorChar,
-                            Path.DirectorySeparatorChar);
+                // C:\ => C_\
+                repositoryPath = fileParentPath.Replace(Path.VolumeSeparatorChar, '_');
             }
 
             var rootRepositoryPath = GetRootRepositoryPath(solutionDirectory);
-            if (repositoryPath == null)
+            if (repositoryPath is null)
             {
                 repositoryPath = rootRepositoryPath;
             }
@@ -77,7 +99,6 @@ namespace LOSTALLOY.LocalHistory
                 repositoryPath = Path.Combine(rootRepositoryPath, repositoryPath);
             }
 
-            LocalHistoryPackage.Log($"{nameof(repositoryPath)} for \"{filePath}\" is \"{repositoryPath}\"");
             return repositoryPath;
         }
 
@@ -89,6 +110,16 @@ namespace LOSTALLOY.LocalHistory
         [NotNull]
         public static string GetRootRepositoryPath([NotNull] string solutionDirectory)
         {
+            if (solutionDirectory is null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
+
+            if (solutionDirectory.Trim() == string.Empty || !IsValidPath(solutionDirectory))
+            {
+                throw new ArgumentException("path is invalid", nameof(solutionDirectory));
+            }
+
             return Path.Combine(solutionDirectory, ".localhistory");
         }
 
