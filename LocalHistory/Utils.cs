@@ -115,7 +115,9 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentNullException(nameof(solutionDirectory));
             }
 
-            if (solutionDirectory.Trim() == string.Empty || !IsValidPath(solutionDirectory))
+            solutionDirectory = solutionDirectory.Trim();
+
+            if (solutionDirectory == string.Empty || !IsValidPath(solutionDirectory))
             {
                 throw new ArgumentException("path is invalid", nameof(solutionDirectory));
             }
@@ -130,17 +132,41 @@ namespace LOSTALLOY.LocalHistory
         /// <returns>The converted <see cref="DateTime"></returns>.
         public static DateTime ToDateTime(long unixTime)
         {
-            return EPOCH.ToLocalTime().AddSeconds(unixTime);
+            var maxValue = (DateTime.MaxValue - EPOCH - TimeSpan.FromHours(24)).TotalSeconds - 1;
+            var minValue = (DateTime.MinValue - EPOCH + TimeSpan.FromHours(24)).TotalSeconds;
+
+            if (maxValue < unixTime)
+            {
+                throw new ArgumentOutOfRangeException($"value is too big, maxValue = {maxValue}", nameof(unixTime));
+            }
+
+            if (minValue > unixTime)
+            {
+                throw new ArgumentOutOfRangeException($"value is too low, minValue = {minValue}", nameof(unixTime));
+            }
+
+            return EPOCH.AddSeconds(unixTime).ToLocalTime();
         }
 
         /// <summary>
-        /// Convert a <see cref="DateTime">DateTime</see> ti unix timestamp.
+        /// Convert a <see cref="DateTime">DateTime</see> to unix timestamp.
         /// </summary>
         /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
         /// <returns>The converted date in timetsamp format.</returns>
         public static long ToUnixTime(DateTime dateTime)
         {
-            return (long)(dateTime - EPOCH.ToLocalTime()).TotalSeconds;
+            // This avoids timezone issues
+            if (dateTime < new DateTime(1, 1, 2, 0, 0, 0))
+            {
+                throw new ArgumentOutOfRangeException("value is lower than 0001-01-02 00:00:00", nameof(dateTime));
+            }
+
+            if (dateTime > new DateTime(9999, 12, 2, 23, 59, 59))
+            {
+                throw new ArgumentOutOfRangeException("value is bigger than 9999-12-30 00:00:00", nameof(dateTime));
+            }
+
+            return (long)(dateTime.ToUniversalTime() - EPOCH).TotalSeconds;
         }
 
         /// <summary>
