@@ -128,5 +128,24 @@ namespace LocalHistory.Test
             Utils.ToUnixTime(max).Should().Be(253402214399 + (long)diff.TotalSeconds);
             Utils.ToUnixTime(new DateTime(2019, 10, 23, 12, 24, 13, DateTimeKind.Utc).ToLocalTime()).Should().Be(1571833453);
         }
+
+        [TestMethod]
+        public void TestIsValidPath()
+        {
+            Utils.IsValidPath(null).Should().BeFalse();
+            Utils.IsValidPath("").Should().BeFalse();
+            Utils.IsValidPath(" ").Should().BeFalse();
+            Utils.IsValidPath(@"C:\aaa\bbbb").Should().BeTrue();
+            Utils.IsValidPath(@"\aaa\bbbb").Should().BeTrue();
+            Utils.IsValidPath(@"\aaa\bbbb\C:\ccc").Should().BeFalse();
+            Utils.IsValidPath(@"C:\aaa\bbbb\..\cc").Should().BeTrue();
+            Utils.IsValidPath(@".\aaa\bbbb\..\cc").Should().BeTrue();
+            Utils.IsValidPath(@"aaa").Should().BeTrue();
+            Utils.IsValidPath(@".\aaa\b  bb\..\cc").Should().BeTrue();
+            Utils.IsValidPath(@".\<\b  bb\>\cc").Should().BeFalse();
+            Utils.IsValidPath(@"\\netfoldet.foo\bar").Should().BeTrue();
+        }
+
+
     }
 }
