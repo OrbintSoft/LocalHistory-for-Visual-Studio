@@ -273,7 +273,7 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentException("Path is invalid", nameof(originalPath));
             }
 
-            if (!Utils.IsValidFilename(originalFileName))
+            if (!Utils.IsValidFileName(originalFileName))
             {
                 throw new ArgumentException("File name is invalid ", nameof(originalFileName));
             }

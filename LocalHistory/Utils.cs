@@ -1,8 +1,9 @@
-﻿// Copyright 2017 LOSTALLOY
+﻿// Copyright 2019 OrbintSoft - Stefano Balzarotti
+// Copyright 2017 LOSTALLOY
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-//    http://www.apache.org/licenses/LICENSE-2.0
+//    https://www.apache.org/licenses/LICENSE-2.0
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -189,8 +190,8 @@ namespace LOSTALLOY.LocalHistory
             }
 
             var strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
-            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
-            var containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
+            strTheseAreInvalidFileNameChars += ":/?*\"";
+            var containsABadCharacter = new Regex($"[{Regex.Escape(strTheseAreInvalidFileNameChars)}]");
             string subpath = path;
             if (drive)
             {
@@ -210,15 +211,27 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="fileName">The file name to check.</param>
         /// <returns>true if the file name is valid.</returns>
-        public static bool IsValidFilename(string fileName)
+        public static bool IsValidFileName([CanBeNull] string fileName)
         {
-            var containsABadCharacter = new Regex("["
-                  + Regex.Escape(new string(Path.GetInvalidPathChars())) + "]");
+            if (string.IsNullOrWhiteSpace(fileName))
+            {
+                return false;
+            }
 
+            fileName = fileName.Trim();
+
+            if (fileName.EndsWith("."))
+            {
+                return false;
+            }
+
+            var containsABadCharacter = new Regex($"[{Regex.Escape(new string(Path.GetInvalidPathChars()))}:/?*\"\\\\]");
             if (containsABadCharacter.IsMatch(fileName))
             {
                 return false;
             }
+
+
 
             return true;
         }

@@ -146,6 +146,24 @@ namespace LocalHistory.Test
             Utils.IsValidPath(@"\\netfoldet.foo\bar").Should().BeTrue();
         }
 
-
+        [TestMethod]
+        public void TestIsValidFileName()
+        {
+            Utils.IsValidFileName(null).Should().BeFalse();
+            Utils.IsValidFileName("").Should().BeFalse();
+            Utils.IsValidFileName(" ").Should().BeFalse();
+            Utils.IsValidFileName(@"C:\aaa\bbbb").Should().BeFalse();
+            Utils.IsValidFileName(@"\aaa\bbbb").Should().BeFalse();
+            Utils.IsValidFileName(@".").Should().BeFalse();
+            Utils.IsValidFileName(@"..").Should().BeFalse();
+            Utils.IsValidFileName(@"..aaa").Should().BeTrue();
+            Utils.IsValidFileName(@"a.").Should().BeFalse();
+            Utils.IsValidFileName(@"<aaa>").Should().BeFalse();
+            Utils.IsValidFileName(@"aa?a").Should().BeFalse();
+            Utils.IsValidFileName(@"aaa").Should().BeTrue();
+            Utils.IsValidFileName(@"aaa.txt").Should().BeTrue();
+            Utils.IsValidFileName(@".tmp").Should().BeTrue();
+            Utils.IsValidFileName(@"a-b_c.dat").Should().BeTrue();
+        }
     }
 }
