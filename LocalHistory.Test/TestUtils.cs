@@ -107,9 +107,26 @@ namespace LocalHistory.Test
             Utils.ToDateTime(1571833453).Should().Be(new DateTime(2019, 10, 23, 12, 24, 13, DateTimeKind.Utc).ToLocalTime());
         }
 
+        [TestMethod]
         public void TestToUnixTime()
         {
-            //Utils.ToUnixTime(DateTime.MinValue)
+            var a = new Action(() => Utils.ToUnixTime(DateTime.MinValue));
+            a.Should().Throw<ArgumentOutOfRangeException>().Where(e => e.ParamName == "dateTime" && e.Message.StartsWith("value is lower than 0001-01-02 00:00:00"));
+            a = new Action(() => Utils.ToUnixTime(new DateTime(1,1,1,23,59,59,999)));
+            a.Should().Throw<ArgumentOutOfRangeException>().Where(e => e.ParamName == "dateTime" && e.Message.StartsWith("value is lower than 0001-01-02 00:00:00"));
+            var min = new DateTime(1, 1, 2, 0, 0, 0);
+            var minLocal = (min).ToLocalTime();
+            var diff = min - minLocal;
+            Utils.ToUnixTime(min).Should().Be(-62135510400 + (long) diff.TotalSeconds);
+            a = new Action(() => Utils.ToUnixTime(DateTime.MaxValue));
+            a.Should().Throw<ArgumentOutOfRangeException>().Where(e => e.ParamName == "dateTime" && e.Message.StartsWith("value is bigger than 9999-12-30 23:59:59"));
+            a = new Action(() => Utils.ToUnixTime(new DateTime(9999, 12, 31, 0, 0, 0)));
+            a.Should().Throw<ArgumentOutOfRangeException>().Where(e => e.ParamName == "dateTime" && e.Message.StartsWith("value is bigger than 9999-12-30 23:59:59"));
+            var max = new DateTime(9999, 12, 30, 23, 59, 59);
+            var maxLocal = max.ToLocalTime();
+            diff = max - maxLocal;
+            Utils.ToUnixTime(max).Should().Be(253402214399 + (long)diff.TotalSeconds);
+            Utils.ToUnixTime(new DateTime(2019, 10, 23, 12, 24, 13, DateTimeKind.Utc).ToLocalTime()).Should().Be(1571833453);
         }
     }
 }

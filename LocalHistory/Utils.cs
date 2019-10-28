@@ -137,12 +137,12 @@ namespace LOSTALLOY.LocalHistory
 
             if (maxValue < unixTime)
             {
-                throw new ArgumentOutOfRangeException($"value is too big, maxValue = {maxValue}", nameof(unixTime));
+                throw new ArgumentOutOfRangeException(nameof(unixTime), $"value is too big, maxValue = {maxValue}");
             }
 
             if (minValue > unixTime)
             {
-                throw new ArgumentOutOfRangeException($"value is too low, minValue = {minValue}", nameof(unixTime));
+                throw new ArgumentOutOfRangeException(nameof(unixTime), $"value is too low, minValue = {minValue}");
             }
 
             return EPOCH.AddSeconds(unixTime).ToLocalTime();
@@ -158,12 +158,12 @@ namespace LOSTALLOY.LocalHistory
             // This avoids timezone issues
             if (dateTime < new DateTime(1, 1, 2, 0, 0, 0))
             {
-                throw new ArgumentOutOfRangeException("value is lower than 0001-01-02 00:00:00", nameof(dateTime));
+                throw new ArgumentOutOfRangeException(nameof(dateTime), "value is lower than 0001-01-02 00:00:00");
             }
 
-            if (dateTime > new DateTime(9999, 12, 2, 23, 59, 59))
+            if (dateTime > new DateTime(9999, 12, 30, 23, 59, 59))
             {
-                throw new ArgumentOutOfRangeException("value is bigger than 9999-12-30 00:00:00", nameof(dateTime));
+                throw new ArgumentOutOfRangeException(nameof(dateTime), "value is bigger than 9999-12-30 23:59:59");
             }
 
             return (long)(dateTime.ToUniversalTime() - EPOCH).TotalSeconds;
@@ -174,8 +174,13 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <returns>true if the path is valid.</returns>
-        public static bool IsValidPath(string path)
+        public static bool IsValidPath([CanBeNull] string path)
         {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return false;
+            }
+
             var driveCheck = new Regex(@"^[a-zA-Z]:\\$");
             var drive = false;
             if (path.Length >= 3 && driveCheck.IsMatch(path.Substring(0, 3)))
