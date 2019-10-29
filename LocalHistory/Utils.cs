@@ -13,9 +13,9 @@
 namespace LOSTALLOY.LocalHistory
 {
     using System;
-    using System.IO;
     using System.Regex;
     using JetBrains.Annotations;
+    using Pri.LongPath;
 
     /// <summary>
     /// Utility class.

@@ -14,8 +14,8 @@
 namespace LOSTALLOY.LocalHistory
 {
     using System;
-    using System.IO;
     using JetBrains.Annotations;
+    using Pri.LongPath;
 
     /// <summary>
     /// A Document Node reesent a versioned file.
@@ -88,11 +88,13 @@ namespace LOSTALLOY.LocalHistory
         /// <summary>
         /// Gets the full path of the versioned file.
         /// </summary>
+        [NotNull]
         public string VersionFileFullFilePath => Path.Combine(this.RepositoryPath, this.VersionFileName);
 
         /// <summary>
         /// Gets the name of the versioned file.
         /// </summary>
+        [NotNull]
         public string VersionFileName => $"{this.unixTime}${this.originalFileName}{(this.HasLabel ? $"${this.label}" : string.Empty)}";
 
         /// <summary>
