@@ -36,6 +36,32 @@ namespace LocalHistory.Test
             a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "unixTime");
             a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", long.MinValue.ToString()); });
             a.Should().Throw<ArgumentOutOfRangeException>();
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363224793", @"C:\"); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "label");
+
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", currentDate); } );
+            a.Should().NotThrow();
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363632"); });
+            a.Should().NotThrow();
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363632", "label"); });
+            a.Should().NotThrow();
         }
+
+        public void TestAddLabel()
+        {
+
+        }
+
+        [TestMethod]
+        public void TestHasLabel()
+        {
+            var d = new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363632", "label");
+            d.HasLabel.Should().BeTrue();
+            d = new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363632", null);
+            d.HasLabel.Should().BeFalse();            
+            d = new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", DateTime.Now);
+            d.HasLabel.Should().BeFalse();
+        }
+
     }
 }
