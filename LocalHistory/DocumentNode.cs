@@ -1,4 +1,5 @@
-﻿// Copyright 2017 LOSTALLOY
+﻿// Copyright 2019 OrbintSoft - Stefano Balzarotti
+// Copyright 2017 LOSTALLOY
 // Copyright 2013 Intel Corporation
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +15,6 @@ namespace LOSTALLOY.LocalHistory
 {
     using System;
     using System.IO;
-    using System.Regex;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -283,9 +283,9 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentException("Unix timestamp format is invalid ", nameof(unixTime));
             }
 
-            if (label != null)
+            if (label != null && !Utils.IsValidFileName(label))
             {
-                
+                throw new ArgumentException("This label can't be used because contains invalid chars", nameof(label));
             }
         }
     }

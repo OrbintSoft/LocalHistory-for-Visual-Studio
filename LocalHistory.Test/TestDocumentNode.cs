@@ -10,31 +10,32 @@ namespace LocalHistory.Test
     public class TestDocumentNode
     {
         [TestMethod]
-        public void Constructor()
+        public void TestConstructor()
         {
+            var currentDate = DateTime.Now;
             //Test Null
-            var a = new Action(() => { new DocumentNode(null, "C:\\", "D:\\", DateTime.Now); });
+            var a = new Action(() => { new DocumentNode(null, @"C:\dir\solution\folder", "file.txt", currentDate); });
             a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "repositoryPath");
-            a = new Action(() => { new DocumentNode("A:\\", null, "C:\\", DateTime.Now); });
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", null, "file.txt", currentDate); });
             a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "originalPath");
-            a = new Action(() => { new DocumentNode("A", "B", null, DateTime.Now); });
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", null, currentDate); });
             a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "originalFileName");
-            a = new Action(() => { new DocumentNode("A:\\", "B:\\", "C:\\", null); });
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", "file.txt", null); });
             a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "unixTime");
 
-            //Test Valid Path
-
-
-
-            //Test parameters
-            var currentDate = DateTime.Now;
-            var d = new DocumentNode("A", "B", "C", DateTime.MinValue);
-            d.RepositoryPath.Should().Be("A");
-            d.OriginalPath.Should().Be("B");
-            d.RepositoryPath.Should().Be("C");
-
-            // d = new DocumentNode("D", "E", "F", "G");
-
+            //Test bad parameters            
+            a = new Action(() => { new DocumentNode("?", @"C:\dir\solution\folder", "file.txt", currentDate); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "repositoryPath");
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"?", "file.txt", currentDate); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "originalPath");
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"C:\folder", currentDate); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "originalFileName");
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", DateTime.MinValue); });
+            a.Should().Throw<ArgumentOutOfRangeException>();
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "AAA"); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "unixTime");
+            a = new Action(() => { new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", long.MinValue.ToString()); });
+            a.Should().Throw<ArgumentOutOfRangeException>();
         }
     }
 }

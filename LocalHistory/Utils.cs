@@ -30,6 +30,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="path">The path to be normalized.</param>
         /// <returns>The normalized full path.</returns>
+        /// <exception cref="ArgumentNullException">Throw when path is null.</exception>
+        /// <exception cref="ArgumentException">Throw when path is not valid.</exception>
         [NotNull]
         public static string NormalizePath([NotNull] string path)
         {
@@ -59,6 +61,8 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="filePath">The path of the file.</param>
         /// <param name="solutionDirectory">The solution directory.</param>
         /// <returns>The repositort path for that file.</returns>
+        /// <exception cref="ArgumentNullException">Throw when filePath or solutionDirectory are null.</exception>
+        /// <exception cref="ArgumentException">Throw when filePath or solutionDirectory aren't valid paths.</exception>
         [NotNull]
         public static string GetRepositoryPathForFile([NotNull] string filePath, [NotNull] string solutionDirectory)
         {
