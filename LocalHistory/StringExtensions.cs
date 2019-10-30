@@ -11,10 +11,9 @@
 
 namespace LOSTALLOY.LocalHistory {
     using System;
-    using System.IO;
     using System.Text;
     using JetBrains.Annotations;
-
+    using Pri.LongPath;
 
     public static class StringExtensions {
 

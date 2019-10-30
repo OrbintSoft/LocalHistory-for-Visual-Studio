@@ -11,38 +11,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace LOSTALLOY.LocalHistory {
+namespace LOSTALLOY.LocalHistory
+{
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using JetBrains.Annotations;
+    using Pri.LongPath;
 
-
-    internal class DocumentRepository {
-
-        #region Constructors and Destructors
+    internal class DocumentRepository 
+    {
 
         /// <summary>
-        ///     Creates a new <code>DocumentRepository</code> for the given solution and repository.
+        /// Initializes a new instance of the <see cref="DocumentRepository"/> class for the given solution and repository.
         /// </summary>
-        public DocumentRepository(string solutionDirectory, string repositoryDirectory) {
-            SolutionDirectory = solutionDirectory;
-            RepositoryDirectory = repositoryDirectory;
+        public DocumentRepository(string solutionDirectory, string repositoryDirectory) 
+        {
+            this.SolutionDirectory = solutionDirectory;
+            this.RepositoryDirectory = repositoryDirectory;
 
-            if (!Directory.Exists(RepositoryDirectory)) {
-                Directory.CreateDirectory(RepositoryDirectory);
+            if (!Directory.Exists(this.RepositoryDirectory)) 
+            {
+                Directory.CreateDirectory(this.RepositoryDirectory);
             }
 
-            File.SetAttributes(RepositoryDirectory, FileAttributes.Hidden);
+            File.SetAttributes(this.RepositoryDirectory, System.IO.FileAttributes.Hidden);
         }
-
 
         /// <summary>
         ///     Creates a new new revision in the repository for the given project item.
         /// </summary>
         [CanBeNull]
-        public DocumentNode CreateRevision(string filePath) {
+        public DocumentNode CreateRevision(string filePath) 
+        {
             LocalHistoryPackage.Log("CreateRevision(" + filePath + ")");
 
             if (string.IsNullOrEmpty(filePath)) {
@@ -198,10 +199,6 @@ namespace LOSTALLOY.LocalHistory {
             return new DocumentNode(repositoryPath, originalFullFilePath, fileName, dateFromFileName, label);
         }
 
-        #endregion
-
-
-        #region Public Properties
 
         public string SolutionDirectory { get; set; }
 
@@ -209,11 +206,6 @@ namespace LOSTALLOY.LocalHistory {
 
         // TODO: remove this
         public LocalHistoryControl Control { get; set; }
-
-        #endregion
-
-
-        #region Public Methods and Operators
 
         /// <summary>
         ///     Returns all DocumentNode objects in the repository for the given project item.
@@ -287,8 +279,6 @@ namespace LOSTALLOY.LocalHistory {
 
             return revisions;
         }
-
-        #endregion
 
     }
 }

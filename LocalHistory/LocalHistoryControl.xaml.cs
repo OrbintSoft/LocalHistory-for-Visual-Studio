@@ -15,7 +15,6 @@ namespace LOSTALLOY.LocalHistory {
     using System.Collections.ObjectModel;
     using System.ComponentModel;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Windows;
     using System.Windows.Controls;
@@ -25,6 +24,7 @@ namespace LOSTALLOY.LocalHistory {
     using Microsoft.VisualBasic.FileIO;
     using Microsoft.VisualStudio.Shell;
     using Microsoft.VisualStudio.Shell.Interop;
+    using Pri.LongPath;
     using WPFCustomMessageBox;
     using FileSystem = Microsoft.VisualBasic.FileIO.FileSystem;
 

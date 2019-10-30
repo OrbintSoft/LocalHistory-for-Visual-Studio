@@ -215,7 +215,10 @@ namespace LOSTALLOY.LocalHistory
             var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
             this.label = label;
             var newFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
-            File.Move(currentFullPath, newFullPath);
+            if (File.Exists(currentFullPath))
+            {
+                File.Move(currentFullPath, newFullPath);
+            }
         }
 
         /// <summary>
@@ -231,7 +234,11 @@ namespace LOSTALLOY.LocalHistory
             var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
             var fileNameWithoutLabel = this.VersionFileName.Substring(0, this.VersionFileName.Length - $"${this.label}".Length);
             var newFullPath = Path.Combine(this.RepositoryPath, fileNameWithoutLabel);
-            File.Move(currentFullPath, newFullPath);
+            if (File.Exists(currentFullPath))
+            {
+                File.Move(currentFullPath, newFullPath);
+            }
+
             this.label = null;
         }
 

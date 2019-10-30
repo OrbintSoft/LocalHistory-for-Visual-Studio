@@ -47,11 +47,6 @@ namespace LocalHistory.Test
             a.Should().NotThrow();
         }
 
-        public void TestAddLabel()
-        {
-
-        }
-
         [TestMethod]
         public void TestHasLabel()
         {
@@ -61,6 +56,10 @@ namespace LocalHistory.Test
             d.HasLabel.Should().BeFalse();            
             d = new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", DateTime.Now);
             d.HasLabel.Should().BeFalse();
+            d.AddLabel("aaa");
+            d.HasLabel.Should().BeTrue();
+            d.RemoveLabel();
+            d.HasLabel.Should().BeTrue();
         }
 
     }
