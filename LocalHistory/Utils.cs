@@ -235,8 +235,6 @@ namespace LOSTALLOY.LocalHistory
                 return false;
             }
 
-
-
             return true;
         }
     }

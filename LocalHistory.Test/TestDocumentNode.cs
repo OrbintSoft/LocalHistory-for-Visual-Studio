@@ -62,5 +62,11 @@ namespace LocalHistory.Test
             d.HasLabel.Should().BeTrue();
         }
 
+        [TestMethod]
+        public void TestVersionFileFullFilePath()
+        {
+            var d = new DocumentNode(@"C:\dir\solution\.localhistory", @"C:\dir\solution\folder", @"file.txt", "1572363632", "label");
+            var pippo = d.VersionFileFullFilePath;
+        }
     }
 }

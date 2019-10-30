@@ -90,6 +90,7 @@
     <Reference Include="UIAutomationTypes" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigCostants.cs" />
     <Compile Include="DocumentNode.cs" />
     <Compile Include="DocumentRepository.cs" />
     <Compile Include="EnvDTEConstants.cs" />
