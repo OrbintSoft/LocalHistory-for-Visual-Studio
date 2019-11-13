@@ -30,8 +30,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="path">The path to be normalized.</param>
         /// <returns>The normalized full path.</returns>
-        /// <exception cref="ArgumentNullException">Throw when path is null.</exception>
-        /// <exception cref="ArgumentException">Throw when path is not valid.</exception>
+        /// <exception cref="ArgumentNullException">Throw when <paramref name="path"/> is null.</exception>
+        /// <exception cref="ArgumentException">Throw when <paramref name="path"/> is not valid.</exception>
         [NotNull]
         public static string NormalizePath([NotNull] string path)
         {
@@ -61,8 +61,8 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="filePath">The path of the file.</param>
         /// <param name="solutionDirectory">The solution directory.</param>
         /// <returns>The repositort path for that file.</returns>
-        /// <exception cref="ArgumentNullException">Throw when filePath or solutionDirectory are null.</exception>
-        /// <exception cref="ArgumentException">Throw when filePath or solutionDirectory aren't valid paths.</exception>
+        /// <exception cref="ArgumentNullException">Throw when <paramref name="filePath"/> or <paramref name="solutionDirectory"/> are null.</exception>
+        /// <exception cref="ArgumentException">Throw when <paramref name="filePath"/> or <paramref name="solutionDirectory"/> aren't valid paths.</exception>
         [NotNull]
         public static string GetRepositoryPathForFile([NotNull] string filePath, [NotNull] string solutionDirectory)
         {
@@ -112,6 +112,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="solutionDirectory">The path of the solution.</param>
         /// <returns>The path of the repository.</returns>
+        /// <exception cref="ArgumentNullException">Throw when <paramref name="solutionDirectory"/> is null.</exception>
+        /// <exception cref="ArgumentException">Throw when <paramref name="solutionDirectory"/> is invalid.</exception>
         [NotNull]
         public static string GetRootRepositoryPath([NotNull] string solutionDirectory)
         {
@@ -134,7 +136,7 @@ namespace LOSTALLOY.LocalHistory
         /// Convert the unix timestamp in a <see cref="DateTime">DateTime</see> format.
         /// </summary>
         /// <param name="unixTime">The unix timestamp.</param>
-        /// <returns>The converted <see cref="DateTime"></returns>.
+        /// <returns>The converted <see cref="DateTime">.</returns>.
         public static DateTime ToDateTime(long unixTime)
         {
             var maxValue = (DateTime.MaxValue - EPOCH - TimeSpan.FromHours(24)).TotalSeconds - 1;
@@ -158,6 +160,7 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
         /// <returns>The converted date in timetsamp format.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If the datetime is outside the expected range.</exception>
         public static long ToUnixTime(DateTime dateTime)
         {
             // This avoids timezone issues

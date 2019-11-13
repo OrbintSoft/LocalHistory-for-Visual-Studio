@@ -9,22 +9,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace LOSTALLOY.LocalHistory {
-    using System;
-
-
+namespace LOSTALLOY.LocalHistory
+{
     /// <summary>
     ///     This class is a workaround for the fact that we can't use
     ///     things like EnvDTE.Constants.vsWindowKindOutput directly.
     /// </summary>
     // ReSharper disable once IdentifierTypo
-    internal class EnvDTEConstants {
-
-        #region Constants
-
+    internal class EnvDTEConstants 
+    {
         public const string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
-
-        #endregion
-
     }
 }

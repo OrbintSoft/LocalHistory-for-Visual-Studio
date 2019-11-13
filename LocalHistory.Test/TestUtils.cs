@@ -2,8 +2,6 @@
 using LOSTALLOY.LocalHistory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
-using System.Globalization;
-using System.Threading;
 using Pri.LongPath;
 
 namespace LocalHistory.Test
