@@ -27,6 +27,8 @@ namespace LocalHistory.Test
             test.Replace("bcd", "GHI", StringComparison.InvariantCultureIgnoreCase).Should().Be("aGHIef");
             test.Replace("abcdef", "", StringComparison.InvariantCultureIgnoreCase).Should().Be("");
             test.Replace("bcd", null, StringComparison.InvariantCulture).Should().Be("aef");
+            test.Replace("abcdef", null, StringComparison.InvariantCulture).Should().Be("");
+            test.Replace("abCDef", null, StringComparison.InvariantCulture).Should().Be("");
             test = "";
             test.Replace("a", "a", StringComparison.Ordinal).Should().Be("");
         }
@@ -40,7 +42,49 @@ namespace LocalHistory.Test
             test = @"C:\parentdir\dir\solution";
             a = new Action(() => { test.IsSubPathOf(null); });
             a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "baseDirPath");
-            @"C:\parentdir\dir\solution".IsSubPathOf(@"C:\parentdir\dir\solution\folder\file.txt").Should().BeTrue();
+            @"C:\parentdir\dir\solution".IsSubPathOf(@"C:\parentdir").Should().BeTrue();
+            @"C:\parentdir".IsSubPathOf(@"C:\parentdir\dir\solution").Should().BeFalse();
+            a = new Action(() => { test.IsSubPathOf(@"|-<>&$%&\!/"); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "baseDirPath");
+            test = @"!£|\/=/&-_<>";
+            a = new Action(() => { test.IsSubPathOf(@"C:\parentdir"); });
+            a.Should().Throw<ArgumentException>().Where(e => e.ParamName == "path");
+            @"C:\parentdir\dir\solution\file.txt".IsSubPathOf(@"C:\parentdir").Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void TestWithEnding()
+        {
+            string test = null;
+            test.WithEnding("").Should().Be("");
+            Action a = new Action(() => { "sjidoi".WithEnding(null); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "ending");
+            "abcdefg".WithEnding("hilmno").Should().Be("abcdefghilmno");
+            "abcdefg".WithEnding("efg").Should().Be("abcdefg");
+            "".WithEnding("efg").Should().Be("efg");
+            "abcdefg".WithEnding("efghilm").Should().Be("abcdefghilm");
+            "abcdefg".WithEnding("EFG").Should().Be("abcdefgEFG");
+            "abcdefg".WithEnding("EFGHI").Should().Be("abcdefgEFGHI");
+        }
+
+        [TestMethod]
+        public void TestRight()
+        {
+            string test = null;
+            Action a = new Action(() => { test.Right(5); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "value");
+            a = new Action(() => { "aaa".Right(-1); });
+            a.Should().Throw<ArgumentOutOfRangeException>().Where(e => e.ParamName == "length"); ;
+            "abcde".Right(0).Should().Be("");
+            "abcde".Right(1).Should().Be("e");
+            "abcde".Right(2).Should().Be("de");
+            "abcde".Right(3).Should().Be("cde");
+            "abcde".Right(4).Should().Be("bcde");
+            "abcde".Right(5).Should().Be("abcde");
+            "abcde".Right(6).Should().Be("abcde");
+            "abcde".Right(int.MaxValue).Should().Be("abcde");
+            "".Right(3).Should().Be("");
+            "".Right(0).Should().Be("");
         }
     }
 }

@@ -23,7 +23,7 @@ namespace LOSTALLOY.LocalHistory
     public static class StringExtensions
     {
         /// <summary>
-        /// Returns a new string in which all occurrences of a specified string in the current instance are replaced with another 
+        /// Returns a new string in which all occurrences of a specified string in the current instance are replaced with another
         /// specified string according the type of search to use for the specified string.
         /// </summary>
         /// <param name="str">The string performing the replace method.</param>
@@ -31,8 +31,10 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="newValue">The string replace all occurrences of <paramref name="oldValue"/>.
         /// If value is equal to <c>null</c>, than all occurrences of <paramref name="oldValue"/> will be removed from the <paramref name="str"/>.</param>
         /// <param name="comparisonType">One of the enumeration values that specifies the rules for the search.</param>
-        /// <returns>A string that is equivalent to the current string except that all instances of <paramref name="oldValue"/> are replaced with <paramref name="newValue"/>. 
-        /// If <paramref name="oldValue"/> is not found in the current instance, the method returns the current instance unchanged.</returns>        
+        /// <returns>A string that is equivalent to the current string except that all instances of <paramref name="oldValue"/> are replaced with <paramref name="newValue"/>.
+        /// If <paramref name="oldValue"/> is not found in the current instance, the method returns the current instance unchanged.</returns>
+        /// <exception cref="ArgumentNullException">If str or oldValue are null.</exception>
+        [NotNull]
         public static string Replace([NotNull] this string str, [NotNull] string oldValue, [CanBeNull] string @newValue, StringComparison comparisonType)
         {
             // Check inputs.
@@ -88,7 +90,7 @@ namespace LOSTALLOY.LocalHistory
                 }
 
                 // Prepare start index for the next search.
-                // This needed to prevent infinite loop, otherwise method always start search 
+                // This needed to prevent infinite loop, otherwise method always start search
                 // from the start of the string. For example: if an oldValue == "EXAMPLE", newValue == "example"
                 // and comparisonType == "any ignore case" will conquer to replacing:
                 // "EXAMPLE" to "example" to "example" to "example" … infinite loop.
@@ -118,6 +120,7 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="baseDirPath">The base directory path.</param>
         /// <returns>True baseDirPath ia a subpath of path.</returns>
         /// <exception cref="ArgumentNullException">if path or baseDirPath are null.</exception>
+        /// <exception cref="ArgumentException">if path or baseDirPath aren't valid.</exception>
         public static bool IsSubPathOf([NotNull] this string path, [NotNull] string baseDirPath)
         {
             if (path is null)
@@ -130,6 +133,16 @@ namespace LOSTALLOY.LocalHistory
                 throw new ArgumentNullException(nameof(baseDirPath));
             }
 
+            if (!Utils.IsValidPath(path))
+            {
+                throw new ArgumentException("path is invalid", nameof(path));
+            }
+
+            if (!Utils.IsValidPath(baseDirPath))
+            {
+                throw new ArgumentException("path is invalid", nameof(baseDirPath));
+            }
+
             var normalizedPath = Utils.NormalizePath(path);
             var normalizedBaseDirPath = Path.GetFullPath(Utils.NormalizePath(baseDirPath));
             return normalizedPath.StartsWith(normalizedBaseDirPath, StringComparison.OrdinalIgnoreCase);
@@ -137,19 +150,24 @@ namespace LOSTALLOY.LocalHistory
 
         /// <summary>
         /// Returns <paramref name="str" /> with the minimal concatenation of <paramref name="ending" /> (starting from end)
-        /// that
-        /// results in satisfying .EndsWith(ending).
+        /// that results in satisfying .EndsWith(ending).
         /// </summary>
         /// <example>"hel".WithEnding("llo") returns "hello", which is the result of "hel" + "lo".</example>
-        /// <param name="ending"></param>
-        /// <param name="str"></param>
+        /// <param name="str">the original string.</param>
+        /// <param name="ending">the string to concatenate at end.</param>
         /// <returns>The resulting string.</returns>
+        /// <exception cref="ArgumentNullException">If ending is null.</exception>
         [NotNull]
         public static string WithEnding([CanBeNull] this string str, [NotNull] string ending)
         {
             if (str == null)
             {
                 return ending;
+            }
+
+            if (ending is null)
+            {
+                throw new ArgumentNullException(nameof(ending));
             }
 
             var result = str;
@@ -160,7 +178,7 @@ namespace LOSTALLOY.LocalHistory
             for (var i = 0; i <= ending.Length; i++)
             {
                 var tmp = result + ending.Right(i);
-                if (tmp.EndsWith(ending, StringComparison.Ordinal)) 
+                if (tmp.EndsWith(ending, StringComparison.Ordinal))
                 {
                     return tmp;
                 }
@@ -173,6 +191,9 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="value">The string to retrieve the substring from.</param>
         /// <param name="length">The number of characters to retrieve.</param>
         /// <returns>The substring.</returns>
+        /// <exception cref="ArgumentNullException">if value is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if length is under zero.</exception>
+        [NotNull]
         public static string Right([NotNull] this string value, int length)
         {
             if (value is null)
