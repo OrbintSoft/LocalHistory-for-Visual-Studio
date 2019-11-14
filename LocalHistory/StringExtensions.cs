@@ -209,5 +209,45 @@ namespace LOSTALLOY.LocalHistory
 
             return length < value.Length ? value.Substring(value.Length - length) : value;
         }
+
+        /// <summary>
+        /// Giving a string "fil$e.txt", replaces "$" with "$$" resulting in "fil$$e.txt".
+        /// "$" is a field separator in a versioned file.
+        /// </summary>
+        /// <param name="value">the value to be scaped.</param>
+        /// <returns>The escaped string.</returns>
+        /// <exception cref="ArgumentNullException">if value is null.</exception>
+        [NotNull]
+        public static string EscapeFileVersionSeparator([NotNull] this string value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var charToBeEscaped = new string(new char[] { ConfigCostants.FileVersionFieldSeparator });
+            var charEscaped = new string(new char[] { ConfigCostants.FileVersionFieldSeparator, ConfigCostants.FileVersionFieldSeparator });
+            return value.Replace(charToBeEscaped, charEscaped);
+        }
+
+        /// <summary>
+        /// Giving a string "fil$$e.txt", replaces "$$" with "$" resulting in "fil$e.txt".
+        /// "$" is a field separator in a versioned file.
+        /// </summary>
+        /// <param name="value">the value to be scaped.</param>
+        /// <returns>The unescaped string.</returns>
+        /// <exception cref="ArgumentNullException">if value is null.</exception>
+        [NotNull]
+        public static string UnescapeFileVersionSeparator([NotNull] this string value)
+        {
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var charToBeUnescaped = new string(new char[] { ConfigCostants.FileVersionFieldSeparator });
+            var charEscaped = new string(new char[] { ConfigCostants.FileVersionFieldSeparator, ConfigCostants.FileVersionFieldSeparator });
+            return value.Replace(charEscaped, charToBeUnescaped);
+        }
     }
 }

@@ -28,7 +28,7 @@ namespace LocalHistory.Test
             test.Replace("abcdef", "", StringComparison.InvariantCultureIgnoreCase).Should().Be("");
             test.Replace("bcd", null, StringComparison.InvariantCulture).Should().Be("aef");
             test.Replace("abcdef", null, StringComparison.InvariantCulture).Should().Be("");
-            test.Replace("abCDef", null, StringComparison.InvariantCulture).Should().Be("");
+            test.Replace("abCDef", null, StringComparison.InvariantCultureIgnoreCase).Should().Be("");
             test = "";
             test.Replace("a", "a", StringComparison.Ordinal).Should().Be("");
         }
@@ -85,6 +85,39 @@ namespace LocalHistory.Test
             "abcde".Right(int.MaxValue).Should().Be("abcde");
             "".Right(3).Should().Be("");
             "".Right(0).Should().Be("");
+        }
+
+        [TestMethod]
+        public void TestEscapeFileVersionSeparator()
+        {
+            string test = null;
+            Action a = new Action(() => { test.EscapeFileVersionSeparator(); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "value");
+            "".EscapeFileVersionSeparator().Should().Be("");
+            "$".EscapeFileVersionSeparator().Should().Be("$$");
+            "$$".EscapeFileVersionSeparator().Should().Be("$$$$");
+            "$$$".EscapeFileVersionSeparator().Should().Be("$$$$$$");
+            "a$".EscapeFileVersionSeparator().Should().Be("a$$");
+            "$a".EscapeFileVersionSeparator().Should().Be("$$a");
+            "abcd".EscapeFileVersionSeparator().Should().Be("abcd");
+        }
+
+        [TestMethod]
+        public void TestUnescapeFileVersionSeparator()
+        {
+            string test = null;
+            Action a = new Action(() => { test.UnescapeFileVersionSeparator(); });
+            a.Should().Throw<ArgumentNullException>().Where(e => e.ParamName == "value");
+            "".UnescapeFileVersionSeparator().Should().Be("");
+            "$".UnescapeFileVersionSeparator().Should().Be("$");
+            "$$".UnescapeFileVersionSeparator().Should().Be("$");
+            "$$$".UnescapeFileVersionSeparator().Should().Be("$$");
+            "$$$$".UnescapeFileVersionSeparator().Should().Be("$$");
+            "$$$$$".UnescapeFileVersionSeparator().Should().Be("$$$");
+            "$$$$$$".UnescapeFileVersionSeparator().Should().Be("$$$");
+            "a$$".UnescapeFileVersionSeparator().Should().Be("a$");
+            "$$a".UnescapeFileVersionSeparator().Should().Be("$a");
+            "abcd".UnescapeFileVersionSeparator().Should().Be("abcd");
         }
     }
 }

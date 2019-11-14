@@ -59,7 +59,7 @@ namespace LocalHistory.Test
             d.AddLabel("aaa");
             d.HasLabel.Should().BeTrue();
             d.RemoveLabel();
-            d.HasLabel.Should().BeTrue();
+            d.HasLabel.Should().BeFalse();
         }
 
         [TestMethod]

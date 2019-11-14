@@ -95,7 +95,7 @@ namespace LOSTALLOY.LocalHistory
         /// Gets the name of the versioned file.
         /// </summary>
         [NotNull]
-        public string VersionFileName => $"{this.unixTime}${this.originalFileName}{(this.HasLabel ? $"${this.label}" : string.Empty)}";
+        public string VersionFileName => $"{this.unixTime.EscapeFileVersionSeparator()}{ConfigCostants.FileVersionFieldSeparator}{this.originalFileName.EscapeFileVersionSeparator()}{(this.HasLabel ? $"{ConfigCostants.FileVersionFieldSeparator}{this.label.EscapeFileVersionSeparator()}" : string.Empty)}";
 
         /// <summary>
         /// Gets the path of the repository.
@@ -232,7 +232,7 @@ namespace LOSTALLOY.LocalHistory
             }
 
             var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
-            var fileNameWithoutLabel = this.VersionFileName.Substring(0, this.VersionFileName.Length - $"${this.label}".Length);
+            var fileNameWithoutLabel = this.VersionFileName.Substring(0, this.VersionFileName.Length - $"{ConfigCostants.FileVersionFieldSeparator}{this.label}".Length);
             var newFullPath = Path.Combine(this.RepositoryPath, fileNameWithoutLabel);
             if (File.Exists(currentFullPath))
             {
