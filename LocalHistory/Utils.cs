@@ -56,7 +56,7 @@ namespace LOSTALLOY.LocalHistory
         }
 
         /// <summary>
-        /// Get the repositiry path for a file.
+        /// Get the repository path for a file.
         /// </summary>
         /// <param name="filePath">The path of the file.</param>
         /// <param name="solutionDirectory">The solution directory.</param>

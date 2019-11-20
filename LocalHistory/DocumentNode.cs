@@ -14,6 +14,7 @@
 namespace LOSTALLOY.LocalHistory
 {
     using System;
+    using System.Globalization;
     using JetBrains.Annotations;
     using Pri.LongPath;
 
@@ -51,7 +52,7 @@ namespace LOSTALLOY.LocalHistory
             [NotNull] string originalPath,
             [NotNull] string originalFileName,
             DateTime time)
-            : this(repositoryPath, originalPath, originalFileName, Utils.ToUnixTime(time).ToString())
+            : this(repositoryPath, originalPath, originalFileName, Utils.ToUnixTime(time).ToString(CultureInfo.InvariantCulture))
         {
         }
 
@@ -76,7 +77,7 @@ namespace LOSTALLOY.LocalHistory
             this.originalPath = Utils.NormalizePath(originalPath);
             this.originalFileName = originalFileName;
             this.unixTime = unixTime;
-            this.time = Utils.ToDateTime(long.Parse(this.unixTime));
+            this.time = Utils.ToDateTime(long.Parse(this.unixTime, CultureInfo.InvariantCulture));
             this.label = label;
         }
 
@@ -122,24 +123,24 @@ namespace LOSTALLOY.LocalHistory
         public string Label => this.label;
 
         /// <summary>
-        ///     Gets xaml binding. We only store seconds, so we can't have .f and fiends.
+        ///  Gets xaml binding. We only store seconds, so we can't have .f and fiends.
         /// </summary>
         [NotNull]
         [UsedImplicitly]
-        public string Timestamp => $"{this.time:dd/MM/yyyy HH:mm:ss}";
+        public string Timestamp => $"{this.time:yyyy-MM-dd HH:mm:ss}";
 
         /// <summary>
         /// Gets the timestamp with the label.
         /// </summary>
         [NotNull]
-        public string TimestampAndLabel => $"{this.time:dd/MM/yyyy HH:mm:ss}{(this.HasLabel ? $" {this.label}" : string.Empty)}";
+        public string TimestampAndLabel => $"{this.Timestamp}{(this.HasLabel ? $" {this.label}" : string.Empty)}";
 
-        public static bool operator ==(DocumentNode left, DocumentNode right)
+        public static bool operator ==([CanBeNull]DocumentNode left, [CanBeNull]DocumentNode right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(DocumentNode left, DocumentNode right)
+        public static bool operator !=([CanBeNull]DocumentNode left, [CanBeNull] DocumentNode right)
         {
             return !Equals(left, right);
         }
@@ -168,7 +169,7 @@ namespace LOSTALLOY.LocalHistory
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals([CanBeNull]object obj)
         {
             if (obj is null)
             {
@@ -212,9 +213,9 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="label">The label.</param>
         public void AddLabel(string label)
         {
-            var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
+            var currentFullPath = this.VersionFileFullFilePath;
             this.label = label;
-            var newFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
+            var newFullPath = this.VersionFileFullFilePath;
             if (File.Exists(currentFullPath))
             {
                 File.Move(currentFullPath, newFullPath);
@@ -231,15 +232,13 @@ namespace LOSTALLOY.LocalHistory
                 return;
             }
 
-            var currentFullPath = Path.Combine(this.RepositoryPath, this.VersionFileName);
-            var fileNameWithoutLabel = this.VersionFileName.Substring(0, this.VersionFileName.Length - $"{ConfigCostants.FileVersionFieldSeparator}{this.label}".Length);
-            var newFullPath = Path.Combine(this.RepositoryPath, fileNameWithoutLabel);
+            var currentFullPath = this.VersionFileFullFilePath;
+            this.label = null;
+            var newFullPath = this.VersionFileFullFilePath;
             if (File.Exists(currentFullPath))
             {
                 File.Move(currentFullPath, newFullPath);
             }
-
-            this.label = null;
         }
 
         /// <summary>
@@ -250,7 +249,7 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="originalFileName">The original file name, it should be a valid file name.</param>
         /// <param name="unixTime">The unix timestamp, it should be a valid timestamp. </param>
         /// <param name="label"> The label should contains valid chars. </param>
-        private static void ValidateParameters(string repositoryPath, string originalPath, string originalFileName, string unixTime, string label)
+        private static void ValidateParameters([NotNull]string repositoryPath, [NotNull]string originalPath, [NotNull]string originalFileName, [NotNull] string unixTime, [CanBeNull] string label)
         {
             if (repositoryPath is null)
             {

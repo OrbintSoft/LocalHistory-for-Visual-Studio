@@ -19,13 +19,16 @@ namespace LOSTALLOY.LocalHistory
     using JetBrains.Annotations;
     using Pri.LongPath;
 
+    /// <summary>
+    /// This class acts as file repository for versioned files.
+    /// </summary>
     internal class DocumentRepository 
     {
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DocumentRepository"/> class for the given solution and repository.
         /// </summary>
-        public DocumentRepository(string solutionDirectory, string repositoryDirectory) 
+        public DocumentRepository([NotNull]string solutionDirectory, [NotNull] string repositoryDirectory) 
         {
             this.SolutionDirectory = solutionDirectory;
             this.RepositoryDirectory = repositoryDirectory;
