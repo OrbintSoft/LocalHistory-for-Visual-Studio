@@ -42,7 +42,73 @@
             [CallerFilePath] string sourceFilePath = "",
             [CallerLineNumber] int sourceLineNumber = 0);
 
+        /// <summary>
+        /// To trace the execution of a routine.
+        /// </summary>
+        /// <param name="message">A message.</param>
+        /// <param name="memberName">The caller member (method or property) name.</param>
+        /// <param name="sourceFilePath">The full path of the source file.</param>
+        /// <param name="sourceLineNumber">The line number of the caller.</param>
+        void Trace(
+            string message,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerLineNumber] int sourceLineNumber = 0);
 
-        void Trace();
+        /// <summary>
+        /// To log a message.
+        /// </summary>
+        /// <param name="message">A message.</param>
+        /// <param name="memberName">The caller member (method or property) name.</param>
+        /// <param name="sourceFilePath">The full path of the source file.</param>
+        /// <param name="sourceLineNumber">The line number of the caller.</param>
+        void LogMessage(
+            string message,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerLineNumber] int sourceLineNumber = 0);
+
+        /// <summary>
+        /// To log a warning.
+        /// </summary>
+        /// <param name="message">A message.</param>
+        /// <param name="memberName">The caller member (method or property) name.</param>
+        /// <param name="sourceFilePath">The full path of the source file.</param>
+        /// <param name="sourceLineNumber">The line number of the caller.</param>
+        void LogWarning(
+            string message,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerLineNumber] int sourceLineNumber = 0);
+
+        /// <summary>
+        /// To log an error.
+        /// </summary>
+        /// <param name="message">A message.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="memberName">The caller member (method or property) name.</param>
+        /// <param name="sourceFilePath">The full path of the source file.</param>
+        /// <param name="sourceLineNumber">The line number of the caller.</param>
+        void LogError(
+            string message,
+            Exception exception,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerLineNumber] int sourceLineNumber = 0);
+
+        /// <summary>
+        /// To log a catastrofic error.
+        /// </summary>
+        /// <param name="message">A message.</param>
+        /// <param name="exception">The exception.</param>
+        /// <param name="memberName">The caller member (method or property) name.</param>
+        /// <param name="sourceFilePath">The full path of the source file.</param>
+        /// <param name="sourceLineNumber">The line number of the caller.</param>
+        void LogFatal(
+            string message,
+            Exception exception,
+            [CallerMemberName] string memberName = "",
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerLineNumber] int sourceLineNumber = 0);
     }
 }

@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LOSTALLOY.LocalHistory;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LocalHistory.Test
 {
-    class TestDocumentRepository
+    [TestClass]
+    public class TestDocumentRepository
     {
+        [TestMethod]
+        public void TestConstructor()
+        {
+            var repository = new DocumentRepository(null, null);
+        }
     }
 }

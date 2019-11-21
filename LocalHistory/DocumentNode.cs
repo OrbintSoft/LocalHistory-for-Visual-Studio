@@ -19,7 +19,7 @@ namespace LOSTALLOY.LocalHistory
     using Pri.LongPath;
 
     /// <summary>
-    /// A Document Node reesent a versioned file.
+    /// A Document Node represent a versioned file.
     /// </summary>
     public class DocumentNode
     {
@@ -265,6 +265,8 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="originalFileName">The original file name, it should be a valid file name.</param>
         /// <param name="unixTime">The unix timestamp, it should be a valid timestamp. </param>
         /// <param name="label"> The label should contains valid chars. </param>
+        /// <exception cref="ArgumentNullException">If one of [NotNull] parameter is null.</exception>
+        /// <exception cref="ArgumentException">If you pass a wrong path or a bad unixTime.</exception>
         private static void ValidateParameters([NotNull]string repositoryPath, [NotNull]string originalPath, [NotNull]string originalFileName, [NotNull] string unixTime, [CanBeNull] string label)
         {
             if (repositoryPath is null)

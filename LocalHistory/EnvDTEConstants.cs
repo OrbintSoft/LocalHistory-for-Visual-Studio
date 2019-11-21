@@ -16,7 +16,7 @@ namespace LOSTALLOY.LocalHistory
     ///     things like EnvDTE.Constants.vsWindowKindOutput directly.
     /// </summary>
     // ReSharper disable once IdentifierTypo
-    internal class EnvDTEConstants 
+    internal class EnvDTEConstants
     {
         public const string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
     }
