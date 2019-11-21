@@ -82,6 +82,11 @@ namespace LOSTALLOY.LocalHistory
         }
 
         /// <summary>
+        /// This event is raised if label has changed.
+        /// </summary>
+        public event EventHandler VersionFilePathChanged;
+
+        /// <summary>
         /// Gets a value indicating whether a Label has been set.
         /// </summary>
         public bool HasLabel => !string.IsNullOrEmpty(this.label);
@@ -121,6 +126,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         [CanBeNull]
         public string Label => this.label;
+
+        // TODO: Timestamp should respect user culture.
 
         /// <summary>
         ///  Gets xaml binding. We only store seconds, so we can't have .f and fiends.
@@ -211,11 +218,19 @@ namespace LOSTALLOY.LocalHistory
         /// Add a label to the document.
         /// </summary>
         /// <param name="label">The label.</param>
-        public void AddLabel(string label)
+        public void AddLabel([NotNull]string label)
         {
+            if (label is null)
+            {
+                throw new ArgumentNullException(label);
+            }
+
             var currentFullPath = this.VersionFileFullFilePath;
             this.label = label;
             var newFullPath = this.VersionFileFullFilePath;
+            this.VersionFilePathChanged?.Invoke(this, EventArgs.Empty);
+
+            // TODO: file management should be handled by document repository.
             if (File.Exists(currentFullPath))
             {
                 File.Move(currentFullPath, newFullPath);
@@ -227,17 +242,18 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         public void RemoveLabel()
         {
-            if (!this.HasLabel)
+            if (this.HasLabel)
             {
-                return;
-            }
+                var currentFullPath = this.VersionFileFullFilePath;
+                this.label = null;
+                var newFullPath = this.VersionFileFullFilePath;
+                this.VersionFilePathChanged?.Invoke(this, EventArgs.Empty);
 
-            var currentFullPath = this.VersionFileFullFilePath;
-            this.label = null;
-            var newFullPath = this.VersionFileFullFilePath;
-            if (File.Exists(currentFullPath))
-            {
-                File.Move(currentFullPath, newFullPath);
+                // TODO: file management should be handled by document repository.
+                if (File.Exists(currentFullPath))
+                {
+                    File.Move(currentFullPath, newFullPath);
+                }
             }
         }
 

@@ -119,6 +119,7 @@ namespace LOSTALLOY.LocalHistory {
 
 
         public static void Log(string message, bool forced = false, bool trace = false) {
+            return; //Log should be changed.
             if (string.IsNullOrEmpty(message)) {
                 return;
             }

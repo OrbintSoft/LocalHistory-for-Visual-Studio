@@ -103,9 +103,13 @@
     <Compile Include="LocalHistoryDocumentListener.cs" />
     <Compile Include="LocalHistoryToolWindow.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="Logger\ILogger.cs" />
+    <Compile Include="Logger\Logger.cs" />
+    <Compile Include="Logger\LogLevels.cs" />
     <Compile Include="OptionsPage.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PathChangedEventArgs.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -201,10 +205,13 @@
       <Version>4.0.0.1</Version>
     </PackageReference>
     <PackageReference Include="Nerdbank.Streams">
-      <Version>2.4.46</Version>
+      <Version>2.4.48</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
+    </PackageReference>
+    <PackageReference Include="NLog">
+      <Version>4.6.8</Version>
     </PackageReference>
     <PackageReference Include="Pri.LongPath">
       <Version>2.0.47</Version>
@@ -257,6 +264,7 @@
       <Version>1.0.7</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>

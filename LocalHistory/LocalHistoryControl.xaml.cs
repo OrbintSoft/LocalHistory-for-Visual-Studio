@@ -429,7 +429,7 @@ namespace LOSTALLOY.LocalHistory {
             var label = InputBox.Show(
                 LocalHistory.Resources.AddLabelMsgBoxLabel,
                 LocalHistory.Resources.AddLabelMsgBoxTitle,
-                "",
+                string.Empty,
                 LabelInputValidator)?.Text ?? string.Empty;
 
             if (LabelIsValid(label)) {
