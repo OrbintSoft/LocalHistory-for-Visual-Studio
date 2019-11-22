@@ -37,7 +37,7 @@
         /// <param name="sourceLineNumber">The line number of the caller.</param>
         void LogDump(
             string message,
-            object @object,
+            Lazy<object> @object,
             [CallerMemberName] string memberName = "",
             [CallerFilePath] string sourceFilePath = "",
             [CallerLineNumber] int sourceLineNumber = 0);

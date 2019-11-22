@@ -33,7 +33,7 @@
         /// <summary>
         /// To log a warning.
         /// </summary>
-        WARN = 6,
+        WARNING = 6,
 
         /// <summary>
         /// To log an error.

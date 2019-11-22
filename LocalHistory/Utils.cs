@@ -90,6 +90,7 @@ namespace LOSTALLOY.LocalHistory
             string repositoryPath = null;
             if (!string.IsNullOrEmpty(fileParentPath))
             {
+                // TODO: maybe a proper escape is better.
                 // C:\ => C_\
                 repositoryPath = fileParentPath.Replace(Path.VolumeSeparatorChar, '_');
             }
@@ -136,7 +137,8 @@ namespace LOSTALLOY.LocalHistory
         /// Convert the unix timestamp in a <see cref="DateTime">DateTime</see> format.
         /// </summary>
         /// <param name="unixTime">The unix timestamp.</param>
-        /// <returns>The converted <see cref="DateTime">.</returns>.
+        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="unixTime"/> is too big or small to be converted into local <see cref="DateTime"/>.</exception>
+        /// <returns>The converted <see cref="DateTime"/>.</returns>
         public static DateTime ToDateTime(long unixTime)
         {
             var maxValue = (DateTime.MaxValue - EPOCH - TimeSpan.FromHours(24)).TotalSeconds - 1;
@@ -160,7 +162,7 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="dateTime">The <see cref="DateTime">DateTime</see>.</param>
         /// <returns>The converted date in timetsamp format.</returns>
-        /// <exception cref="ArgumentOutOfRangeException">If the datetime is outside the expected range.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">If the <paramref name="dateTime"/> is outside the expected range.</exception>
         public static long ToUnixTime(DateTime dateTime)
         {
             // This avoids timezone issues
