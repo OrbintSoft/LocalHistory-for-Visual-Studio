@@ -60,7 +60,6 @@
         public void Log(LogLevel loglevel, string message, Lazy<object> @object = null, Exception exception = null, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             // TODO: improve log
-
             Debug.WriteLine(message);
             this.nlogger.Info(message);
             if (LocalHistoryPackage.Instance != null)

@@ -64,6 +64,9 @@ namespace LOSTALLOY.LocalHistory
         /// <param name="originalFileName">The original file name.</param>
         /// <param name="unixTime">The time in unix timestamp format.</param>
         /// <param name="label">The label.</param>
+        /// <exception cref="ArgumentNullException">If you pass null to a [NotNull] parameter.</exception>
+        /// <exception cref="ArgumentException">If you pass an invalid argument.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if you pass a <paramref name="unixTime"/> out of range.</exception>
         public DocumentNode(
             [NotNull] string repositoryPath,
             [NotNull] string originalPath,

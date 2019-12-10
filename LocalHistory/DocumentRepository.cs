@@ -322,6 +322,8 @@ namespace LOSTALLOY.LocalHistory
         /// </summary>
         /// <param name="solutionDirectory">The directory of the solution.</param>
         /// <param name="repositoryDirectory">The directory where to store versioned repository.</param>
+        /// <exception cref="ArgumentNullException">If <paramref name="repositoryDirectory"/> or <paramref name="repositoryDirectory"/> are null.</exception>
+        /// <exception cref="ArgumentException">If path is path in valid format or <paramref name="solutionDirectory"/> doesn't exist.</exception>
         private static void ValidateParameters([NotNull]string solutionDirectory, [NotNull] string repositoryDirectory)
         {
             if (solutionDirectory is null)
